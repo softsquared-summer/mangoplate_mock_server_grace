@@ -107,4 +107,4 @@ images/
 
 # End of https://www.gitignore.io/api/phpstorm,composer
 
-/appPdos/DatabasePdo.php
+/pdos/DatabasePdo.php
