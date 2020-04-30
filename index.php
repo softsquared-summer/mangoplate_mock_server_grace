@@ -29,8 +29,8 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 //    $r->addRoute('GET', '/user/{id:\d+}', 'get_user_handler');
 //    // The /{title} suffix is optional
 //    $r->addRoute('GET', '/articles/{id:\d+}[/{title}]', 'get_article_handler');
-
-    $r->addRoute('GET', '/districts/{districts-id}', ['MangoController', 'getDistricts']);
+    $r->addRoute('GET', '/districts', ['MangoController', 'getDistricts']);
+    $r->addRoute('GET', '/districts/{districtsId}', ['MangoController', 'getAreas']);
 });
 
 // Fetch method and URI from somewhere

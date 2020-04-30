@@ -1,4 +1,19 @@
 <?php
+function getDistricts()
+{
+    $pdo = pdoSqlConnect();
+    $query = "select d.id distinctsId, d.name from district d";
+
+    $st = $pdo->prepare($query);
+    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
 
 function isValidDistrict($distirctsId){
     $pdo = pdoSqlConnect();
@@ -17,7 +32,7 @@ function isValidDistrict($distirctsId){
 
 }
 
-function getDistricts($distirctsId)
+function getAreas($distirctsId)
 {
     $pdo = pdoSqlConnect();
     $query = "select a.id, a.name

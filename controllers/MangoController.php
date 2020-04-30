@@ -27,18 +27,37 @@ try {
 //                addErrorLogs($errorLogs, $res, $req);
 //                return;
 //            }
+            $res->result = getDistricts();
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "지역구 목록 조회";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+            
+        case "getAreas":
+            http_response_code(200);
 
-            $distirctsId = $vars["districts-id"];
+//            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+//
+//            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+//                $res->isSuccess = FALSE;
+//                $res->code = 201;
+//                $res->message = "유효하지 않은 토큰입니다";
+//                echo json_encode($res, JSON_NUMERIC_CHECK);
+//                addErrorLogs($errorLogs, $res, $req);
+//                return;
+//            }
+            $distirctsId = $vars["districtsId"];
 
             if(!isValidDistrict($distirctsId)){
                 $res->isSuccess = FALSE;
                 $res->code = 400;
                 $res->message = "해당 지역구가 없습니다.";
             }else{
-                $res->result = getDistricts($distirctsId);
+                $res->result = getAreas($distirctsId);
                 $res->isSuccess = TRUE;
                 $res->code = 200;
-                $res->message = "각 지역 목록 조회";
+                $res->message = "지역 목록 조회";
             }
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
