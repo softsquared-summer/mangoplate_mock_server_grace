@@ -9,9 +9,110 @@ $req = json_decode(file_get_contents("php://input"));
 try {
     addAccessLogs($accessLogs, $req);
     switch ($handler) {
+
+        case "postUser":
+            http_response_code(200);
+
+            $email = $req->email;
+            $pw1 = $req->pw1;
+            $pw2 = $req->pw2;
+            $name = $req->name;
+            $profileUrl = $req->profileUrl;
+            $phone = $req->phone;;
+
+            // 비었는지
+            if(!isset($email) or !isset($pw1) or !isset($pw2) or !isset($name)){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "회원가입 실패(사유: email, pw1, pw2, name은 null이 될 수 없습니다.)";
+                echo json_encode($res);
+                break;
+            }else{
+
+                // email Validation
+                if (!preg_match("/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i", $email)) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "회원가입 실패(사유: email 형식이 올바르지 않습니다.)";
+                    echo json_encode($res);
+                    break;
+                }else{
+                    if(isExistUser($email)){
+                        $res->isSuccess = FALSE;
+                        $res->code = 400;
+                        $res->message = "회원가입 실패(사유: 이미 존재하는 email 입니다.)";
+                        echo json_encode($res);
+                        break;
+                    }
+                }
+
+                // password
+                if($pw1 != $pw2){
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "회원가입 실패(사유: pw1, pw2가 일치하지 않습니다.)";
+                    echo json_encode($res);
+                    break;
+                }else{
+                    if (!preg_match("/^[A-Za-z0-9]{6,12}$/", $pw1)) {
+                        $res->isSuccess = FALSE;
+                        $res->code = 400;
+                        $res->message = "회원가입 실패(사유: pw은 숫자, 문자를 포함한 6~12자리를 입력하세요.)";
+                        echo json_encode($res);
+                        break;
+                    }
+                }
+
+                // name
+                $nameLen = mb_strlen($name, 'utf-8');
+                if ($nameLen < 2 or $nameLen > 20) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "회원가입 실패(사유: name은 2자 이상 20자 이하로 입력하세요.)";
+                    echo json_encode($res);
+                    break;
+                }
+            }
+
+            // phone Validation
+            if(isset($phone)){
+                if (!preg_match("/^\d{3}-\d{3,4}-\d{4}$/", $phone)) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "회원가입 실패(사유: phone 형식(010-0000-0000)이 올바르지 않습니다.)";
+                    echo json_encode($res);
+                    break;
+                }
+            }
+
+            // profileUrl Validation
+            if (isset($profileUrl)) {
+                if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $profileUrl)) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "회원가입 실패(사유: profileUrl의 Url 형식이 올바르지 않습니다.)";
+                    echo json_encode($res);
+                    break;
+                }
+                if (!preg_match("/\.(gif|jpg|png)$/i", $profileUrl)) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "회원가입 실패(사유: profileUrl은 gif, jpg, png만 가능합니다.)";
+                    echo json_encode($res);
+                    break;
+                }
+            }
+            $postRes = postUser($email, $pw1, $name, $profileUrl, $phone);
+            $res->result = $postRes;
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "회원가입 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+            
         /*
          * API No. 3-4
-         * API Name : 각 지역 목록
+         * API Name : 지역구 목록
          * 마지막 수정 날짜 : 20.04.30
          */
         case "getDistricts":
@@ -27,13 +128,19 @@ try {
 //                addErrorLogs($errorLogs, $res, $req);
 //                return;
 //            }
+//            echo password_hash("rasmuslerdorf", PASSWORD_DEFAULT);
             $res->result = getDistricts();
             $res->isSuccess = TRUE;
             $res->code = 200;
             $res->message = "지역구 목록 조회";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
-            
+
+        /*
+        * API No. 3-5
+        * API Name : 지역 목록
+        * 마지막 수정 날짜 : 20.04.30
+        */
         case "getAreas":
             http_response_code(200);
 
@@ -49,11 +156,11 @@ try {
 //            }
             $distirctsId = $vars["districtsId"];
 
-            if(!isValidDistrict($distirctsId)){
+            if (!isValidDistrict($distirctsId)) {
                 $res->isSuccess = FALSE;
                 $res->code = 400;
                 $res->message = "해당 지역구가 없습니다.";
-            }else{
+            } else {
                 $res->result = getAreas($distirctsId);
                 $res->isSuccess = TRUE;
                 $res->code = 200;

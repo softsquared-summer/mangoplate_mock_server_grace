@@ -11,6 +11,7 @@ try {
     switch ($handler) {
         case "index":
             echo "API Server";
+            echo mb_strlen( '가나다', 'utf-8' );
 //            http_response_code(200);
 //            $res->result = test();
 //            $res->isSuccess = TRUE;

@@ -1,4 +1,65 @@
 <?php
+
+function isExistUser($email){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM user u WHERE u.email= ?) AS exist;";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$email]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;
+    $pdo = null;
+
+    return intval($res[0]["exist"]);
+
+}
+
+function postUser($email, $pw1, $name, $profileUrl, $phone)
+{
+    if(!isset($profileUrl)){
+        $profileUrl = '';
+    }
+    if(!isset($phone)){
+        $phone = '';
+    }
+
+    $pdo = pdoSqlConnect();
+    $query = "INSERT INTO user (email, password, name, profile_url, phone) VALUES (?, ?, ?, ?, ?)";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$email, $pw1, $name, $profileUrl, $phone]);
+
+    $userId = $pdo->lastInsertId();
+
+    $st = null;
+    $pdo = null;
+
+    $res = (Object)Array();
+    $res-> userId = $userId;
+    return $res;
+    
+}
+
+function getUserId()
+{
+    $pdo = pdoSqlConnect();
+    $query = "select d.id distinctsId, d.name from district d";
+
+    $st = $pdo->prepare($query);
+    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
 function getDistricts()
 {
     $pdo = pdoSqlConnect();
