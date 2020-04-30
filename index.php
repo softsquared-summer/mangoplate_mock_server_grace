@@ -2,6 +2,7 @@
 require './pdos/DatabasePdo.php';
 require './pdos/IndexPdo.php';
 require './vendor/autoload.php';
+require './pdos/MangoPdo.php';
 
 use \Monolog\Logger as Logger;
 use Monolog\Handler\StreamHandler;
@@ -10,7 +11,7 @@ date_default_timezone_set('Asia/Seoul');
 ini_set('default_charset', 'utf8mb4');
 
 //에러출력하게 하는 코드
-//error_reporting(E_ALL); ini_set("display_errors", 1);
+error_reporting(E_ALL); ini_set("display_errors", 1);
 
 //Main Server API
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
@@ -23,12 +24,13 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 //    $r->addRoute('POST', '/jwt', ['MainController', 'createJwt']);
 //
 
-
 //    $r->addRoute('GET', '/users', 'get_all_users_handler');
 //    // {id} must be a number (\d+)
 //    $r->addRoute('GET', '/user/{id:\d+}', 'get_user_handler');
 //    // The /{title} suffix is optional
 //    $r->addRoute('GET', '/articles/{id:\d+}[/{title}]', 'get_article_handler');
+
+    $r->addRoute('GET', '/districts/{districts-id}', ['MangoController', 'getDistricts']);
 });
 
 // Fetch method and URI from somewhere
@@ -80,11 +82,11 @@ switch ($routeInfo[0]) {
                 $vars = $routeInfo[2];
                 require './controllers/MainController.php';
                 break;
-            /*case 'EventController':
+            case 'MangoController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
-                require './controllers/EventController.php';
+                require './controllers/MangoController.php';
                 break;
-            case 'ProductController':
+            /*case 'ProductController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/ProductController.php';
                 break;
