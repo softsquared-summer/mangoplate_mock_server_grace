@@ -9,7 +9,11 @@ $req = json_decode(file_get_contents("php://input"));
 try {
     addAccessLogs($accessLogs, $req);
     switch ($handler) {
-
+        /*
+         * API No. 1-1
+         * API Name : 회원가입 (이메일)
+         * 마지막 수정 날짜 : 20.04.30
+         */
         case "postUser":
             http_response_code(200);
 
@@ -109,6 +113,44 @@ try {
             $res->message = "회원가입 성공";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
+
+        /*
+        * API No. 1-2
+        * API Name : 로그인
+        * 마지막 수정 날짜 : 20.04.30
+        */
+        case "createJwt":
+            http_response_code(200);
+
+            $echo = "test";
+            $email = $req->email;
+            $pw = $req->pw;
+
+            if(!isset($email) or !isset($pw)){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "email, pw를 입력하세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+
+            if(!isValidUser($req->email, $req->pw)){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 사용자 입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            //페이로드에 맞게 다시 설정 요함
+            $jwt = getJWToken($req->email, $req->pw, JWT_SECRET_KEY);
+            $res->result->jwt = $jwt;
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "테스트 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
             
         /*
          * API No. 3-4
@@ -118,17 +160,17 @@ try {
         case "getDistricts":
             http_response_code(200);
 
-//            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
-//
-//            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
-//                $res->isSuccess = FALSE;
-//                $res->code = 201;
-//                $res->message = "유효하지 않은 토큰입니다";
-//                echo json_encode($res, JSON_NUMERIC_CHECK);
-//                addErrorLogs($errorLogs, $res, $req);
-//                return;
-//            }
-//            echo password_hash("rasmuslerdorf", PASSWORD_DEFAULT);
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
             $res->result = getDistricts();
             $res->isSuccess = TRUE;
             $res->code = 200;
@@ -144,16 +186,17 @@ try {
         case "getAreas":
             http_response_code(200);
 
-//            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
-//
-//            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
-//                $res->isSuccess = FALSE;
-//                $res->code = 201;
-//                $res->message = "유효하지 않은 토큰입니다";
-//                echo json_encode($res, JSON_NUMERIC_CHECK);
-//                addErrorLogs($errorLogs, $res, $req);
-//                return;
-//            }
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
             $distirctsId = $vars["districtsId"];
 
             if (!isValidDistrict($distirctsId)) {
