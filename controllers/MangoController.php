@@ -40,7 +40,7 @@ try {
                 $res->code = 200;
                 $res->message = "각 지역 목록 조회";
             }
-            echo json_encode($res);
+            echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 //        /*
 //         * API No. 0
