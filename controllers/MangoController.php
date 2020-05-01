@@ -231,7 +231,6 @@ try {
 
             break;
 
-
         /*
         * API No. 2-1
         * API Name : 첫 이벤트 조회
@@ -337,7 +336,6 @@ try {
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 
-
         /*
         * API No. 3-4
         * API Name : 지역구 목록
@@ -395,6 +393,80 @@ try {
                 $res->code = 200;
                 $res->message = "지역 목록 조회";
             }
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+        * API No. 4-1
+        * API Name : 식당 목록 (추천순)
+        * 마지막 수정 날짜 : 20.05.02
+        */
+        case "getRestaurants":
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $type = $_GET['type'];
+
+            $area = $_GET['area'];
+
+            $temp = Array();
+
+            $temp[0]->restaurantId = 1;
+            $temp[0]->img = "https://i.imgur.com/p98abur.jpg";
+            $temp[0]->star = "YES";
+            $temp[0]->title = "1. 여산족발";
+            $temp[0]-> area= "금천구";
+            $temp[0]->distance = "21.91km";
+            $temp[0]->seenNum = "37,270";
+            $temp[0]->reviewNum= "29";
+            $temp[0]->reviewNum= "4.2";
+            $temp[0]->reviewNum= "orange";
+
+            $temp[1]->restaurantId = 2;
+            $temp[1]->img = "https://i.imgur.com/Kh0d5zW.jpg";
+            $temp[1]->star = "NO";
+            $temp[1]->title = "2. 카페스미다";
+            $temp[1]-> area= "금천구";
+            $temp[1]->distance = "22.00km";
+            $temp[1]->seenNum = "5,368";
+            $temp[1]->reviewNum= "8";
+            $temp[1]->reviewNum= "4.1";
+            $temp[1]->reviewNum= "gray";
+
+
+            if ( $type == 'main' and $area == '금천구'){
+                $res->result = $temp;
+                $res->isSuccess = TRUE;
+                $res->code = 200;
+                $res->message = "지역 목록 조회";
+            }else {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "개발 진행 중";
+            }
+
+//            $distirctsId = $vars["districtsId"];
+//
+//            if (!isValidDistrict($distirctsId)) {
+//                $res->isSuccess = FALSE;
+//                $res->code = 400;
+//                $res->message = "해당 지역구가 없습니다.";
+//            } else {
+//                $res->result = getAreas($distirctsId);
+//                $res->isSuccess = TRUE;
+//                $res->code = 200;
+//                $res->message = "지역 목록 조회";
+//            }
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 //        /*
