@@ -35,6 +35,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('POST', '/user', ['MangoController', 'postUser']);
     $r->addRoute('POST', '/jwt', ['MangoController', 'createJwt']);
 
+    // 2. 이벤트
+    $r->addRoute('GET', '/event', ['MangoController', 'getEvent']);
+
     // 3. 지역
     $r->addRoute('GET', '/districts', ['MangoController', 'getDistricts']);
     $r->addRoute('GET', '/districts/{districtsId}', ['MangoController', 'getAreas']);

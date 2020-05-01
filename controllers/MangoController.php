@@ -116,8 +116,8 @@ try {
 
         /*
         * API No. 1-2
-        * API Name : 로그인 (이메일, 카카오, 페이스북)
-        * 마지막 수정 날짜 : 20.04.30
+        * API Name : 로그인 (이메일 O, 카카오 X, 페이스북 O)
+        * 마지막 수정 날짜 : 20.05.01
         */
         case "createJwt":
             http_response_code(200);
@@ -198,7 +198,7 @@ try {
 
                 $email = $id . "@" . $type;
 
-                
+
                 // 회원가입 시킬지 말지
                 if (!isExistUser($email)) {
 
@@ -231,7 +231,34 @@ try {
 
             break;
 
+
         /*
+        * API No. 2-1
+        * API Name : 첫 이벤트 조회
+        * 마지막 수정 날짜 : 20.05.01
+        */
+        case "getEvent":
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $res->result = getEvent();
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "첫 이벤트 조회";            
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+            
+         /*
          * API No. 3-4
          * API Name : 지역구 목록
          * 마지막 수정 날짜 : 20.04.30
