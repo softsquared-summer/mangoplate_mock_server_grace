@@ -102,7 +102,7 @@ where e.is_main = 'Y';";
 function getEventsMain()
 {
     $pdo = pdoSqlConnect();
-    $query = "select e.id, e.detail_image_url ImageUrl
+    $query = "select e.id eventId, e.image_url ImageUrl
 from event e
 where (TIMESTAMPDIFF(minute,  CURRENT_TIME, e.end_date) > 0) or e.end_date is null
 order by e.end_date;";

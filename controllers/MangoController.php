@@ -278,7 +278,7 @@ try {
                 return;
             }
 
-            $type = $req->type;
+            $type = $_GET['type'];
 
             if($type =='main'){
                 $res->result = getEventsMain();
