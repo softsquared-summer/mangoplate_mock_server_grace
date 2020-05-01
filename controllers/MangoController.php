@@ -25,13 +25,13 @@ try {
             $phone = $req->phone;;
 
             // 비었는지
-            if(!isset($email) or !isset($pw1) or !isset($pw2) or !isset($name)){
+            if (!isset($email) or !isset($pw1) or !isset($pw2) or !isset($name)) {
                 $res->isSuccess = FALSE;
                 $res->code = 400;
                 $res->message = "회원가입 실패(사유: email, pw1, pw2, name은 null이 될 수 없습니다.)";
                 echo json_encode($res);
                 break;
-            }else{
+            } else {
 
                 // email Validation
                 if (!preg_match("/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i", $email)) {
@@ -40,8 +40,8 @@ try {
                     $res->message = "회원가입 실패(사유: email 형식이 올바르지 않습니다.)";
                     echo json_encode($res);
                     break;
-                }else{
-                    if(isExistUser($email)){
+                } else {
+                    if (isExistUser($email)) {
                         $res->isSuccess = FALSE;
                         $res->code = 400;
                         $res->message = "회원가입 실패(사유: 이미 존재하는 email 입니다.)";
@@ -51,13 +51,13 @@ try {
                 }
 
                 // password
-                if($pw1 != $pw2){
+                if ($pw1 != $pw2) {
                     $res->isSuccess = FALSE;
                     $res->code = 400;
                     $res->message = "회원가입 실패(사유: pw1, pw2가 일치하지 않습니다.)";
                     echo json_encode($res);
                     break;
-                }else{
+                } else {
                     if (!preg_match("/^[A-Za-z0-9]{6,12}$/", $pw1)) {
                         $res->isSuccess = FALSE;
                         $res->code = 400;
@@ -79,7 +79,7 @@ try {
             }
 
             // phone Validation
-            if(isset($phone)){
+            if (isset($phone)) {
                 if (!preg_match("/^\d{3}-\d{3,4}-\d{4}$/", $phone)) {
                     $res->isSuccess = FALSE;
                     $res->code = 400;
@@ -116,42 +116,121 @@ try {
 
         /*
         * API No. 1-2
-        * API Name : 로그인
+        * API Name : 로그인 (이메일, 카카오, 페이스북)
         * 마지막 수정 날짜 : 20.04.30
         */
         case "createJwt":
             http_response_code(200);
 
-            $echo = "test";
-            $email = $req->email;
-            $pw = $req->pw;
+            $type = $_GET["type"];
 
-            if(!isset($email) or !isset($pw)){
+            if ($type == 'email') {
+
+                $email = $req->email;
+                $pw = $req->pw;
+
+                if (!isset($email) or !isset($pw)) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "email, pw를 입력하세요.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+
+                if (!isValidUser($email, $pw)) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "유효하지 않은 사용자 입니다";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+
+                $jwt = getJWToken($email, $pw, JWT_SECRET_KEY);
+                $res->result->jwt = $jwt;
+                $res->isSuccess = TRUE;
+                $res->code = 200;
+                $res->message = "로그인 성공";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+
+            } elseif ($type == 'kakao') {
+
+                $at = $req->at;
+
+                if (!isset($at)) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "access token을 입력하세요.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+
+                if (!isValidKakaoUser($at)) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "유효하지 않은 사용자 입니다";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+
+            } elseif ($type == 'facebook') {
+
+                $at = $req->at;
+                if (!isset($at)) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "access token을 입력하세요.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+
+                $userInfo = facebook($at);
+                $id = $userInfo->id;
+                $name = $userInfo->name;
+
+                if ($userInfo == null) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "유효하지 않은 사용자 입니다";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+
+                $email = $id . "@" . $type;
+
+                
+                // 회원가입 시킬지 말지
+                if (!isExistUser($email)) {
+
+                    postUser($email, '', $name, '', '');
+                    $jwt = getJWToken($email, '', JWT_SECRET_KEY);
+                    $res->result->jwt = $jwt;
+                    $res->isSuccess = TRUE;
+                    $res->code = 200;
+                    $res->message = "회원가입 및 로그인 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+
+                } else {
+                    $jwt = getJWToken($email, '', JWT_SECRET_KEY);
+                    $res->result->jwt = $jwt;
+                    $res->isSuccess = TRUE;
+                    $res->code = 200;
+                    $res->message = "로그인 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+
+            } else {
                 $res->isSuccess = FALSE;
                 $res->code = 400;
-                $res->message = "email, pw를 입력하세요.";
+                $res->message = "Query Params를 입력하세요 (type = email, kakao, facebook)";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
 
-
-            if(!isValidUser($req->email, $req->pw)){
-                $res->isSuccess = FALSE;
-                $res->code = 400;
-                $res->message = "유효하지 않은 사용자 입니다";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                return;
-            }
-
-            //페이로드에 맞게 다시 설정 요함
-            $jwt = getJWToken($req->email, $req->pw, JWT_SECRET_KEY);
-            $res->result->jwt = $jwt;
-            $res->isSuccess = TRUE;
-            $res->code = 100;
-            $res->message = "테스트 성공";
-            echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
-            
+
         /*
          * API No. 3-4
          * API Name : 지역구 목록

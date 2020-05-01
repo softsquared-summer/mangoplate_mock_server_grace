@@ -11,6 +11,12 @@ try {
     switch ($handler) {
         case "index":
             echo "API Server";
+
+            //$res->result = facebook();
+            $res->isSuccess = TRUE;
+            $res->code = 100;
+            $res->message = "테스트 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
 //            echo mb_strlen( '가나다', 'utf-8' );
 //            http_response_code(200);
 //            $res->result = test();
@@ -37,7 +43,7 @@ try {
         case "test":
 //            echo "API Servesssr";
             http_response_code(200);
-            $res->result = test();
+            // $res->result = test();
             $res->isSuccess = TRUE;
             $res->code = 100;
             $res->message = "테스트 성공";

@@ -28,6 +28,35 @@ function isValidHeader($jwt, $key)
     }
 }
 
+
+function facebook($access_token)
+{
+    $client = new \GuzzleHttp\Client(['http_errors' => false]);
+    if ($access_token == "") {
+        // $this->output->set_status_header(400); // 입력 값 형식이 바르지 않습니다.
+        return null;
+    }
+    try {
+        $response = $client->request('GET', 'https://graph.facebook.com/me?fields=name,email&access_token=' . $access_token);
+
+        $body = $response->getBody();
+        if ($response->getStatusCode() == 400) {
+            // $this->output->set_status_header(500);
+            return null;
+        }
+        $json_response = json_decode($body, true);
+
+        $res = (Object)Array();
+        $res-> name = $json_response['name'];
+        $res-> id = $json_response['id'];
+        return $res;
+
+    } catch
+    (Exception $e) {
+        return null;
+    }
+}
+
 function sendFcm($fcmToken, $data, $key, $deviceType)
 {
     $url = 'https://fcm.googleapis.com/fcm/send';
@@ -76,6 +105,7 @@ function getTodayByTimeStamp()
 
 function getJWToken($email, $pw, $secretKey)
 {
+
     $data = array(
         'date' => (string)getTodayByTimeStamp(),
         'email' => (string)$email,

@@ -30,6 +30,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 //    // The /{title} suffix is optional
 //    $r->addRoute('GET', '/articles/{id:\d+}[/{title}]', 'get_article_handler');
 
+    /* ******************   Mango   ****************** */
     // 1. 로그인
     $r->addRoute('POST', '/user', ['MangoController', 'postUser']);
     $r->addRoute('POST', '/jwt', ['MangoController', 'createJwt']);

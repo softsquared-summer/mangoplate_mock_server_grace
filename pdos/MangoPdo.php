@@ -25,6 +25,9 @@ function postUser($email, $pw1, $name, $profileUrl, $phone)
     if(!isset($phone)){
         $phone = '';
     }
+    if(!isset($pw1)){
+        $pw1 = '';
+    }
 
     $pdo = pdoSqlConnect();
     $query = "INSERT INTO user (email, password, name, profile_url, phone) VALUES (?, ?, ?, ?, ?)";
@@ -76,13 +79,14 @@ function isValidUser($email, $pw)
 
 }
 
-//function isValidSNSUser($at)
+//function isValidSNSUser($email)
 //{
 //    $pdo = pdoSqlConnect();
-//    $query = "";
+//    $query = "SELECT EXISTS(SELECT * FROM user u WHERE u.email= ?) AS exist;";
+//
 //
 //    $st = $pdo->prepare($query);
-//    $st->execute([$email, $pw]);
+//    $st->execute([$email]);
 //    $st->setFetchMode(PDO::FETCH_ASSOC);
 //    $res = $st->fetchAll();
 //
