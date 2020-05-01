@@ -38,6 +38,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     // 2. 이벤트
     $r->addRoute('GET', '/event', ['MangoController', 'getEvent']);
     $r->addRoute('GET', '/events', ['MangoController', 'getEvents']);
+    $r->addRoute('GET', '/events/{eventId}', ['MangoController', 'getEventById']);
 
     // 3. 지역
     $r->addRoute('GET', '/districts', ['MangoController', 'getDistricts']);

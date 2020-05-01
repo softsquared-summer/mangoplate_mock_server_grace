@@ -10,9 +10,9 @@ try {
     addAccessLogs($accessLogs, $req);
     switch ($handler) {
         case "index":
-            echo "API Server";
+            // echo "API Server";
 
-            //$res->result = facebook();
+            // $res->result = facebook();
             $res->isSuccess = TRUE;
             $res->code = 100;
             $res->message = "테스트 성공";
@@ -43,7 +43,7 @@ try {
         case "test":
 //            echo "API Servesssr";
             http_response_code(200);
-            // $res->result = test();
+            $res->result = test();
             $res->isSuccess = TRUE;
             $res->code = 100;
             $res->message = "테스트 성공";

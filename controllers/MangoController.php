@@ -258,10 +258,9 @@ try {
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 
-
         /*
-        * API No. 2-1
-        * API Name : 첫 이벤트 조회
+        * API No. 2-2
+        * API Name : 이벤트 목록 조회 (메인/내정보)
         * 마지막 수정 날짜 : 20.05.01
         */
         case "getEvents":
@@ -291,7 +290,7 @@ try {
                 $res->result = getEventsDetail();
                 $res->isSuccess = TRUE;
                 $res->code = 200;
-                $res->message = "이벤트 목록 조회(상세)";
+                $res->message = "이벤트 목록 조회(내정보)";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }else{
@@ -301,6 +300,42 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
             }
+
+       /*
+       * API No. 2-3
+       * API Name : 이벤트 상세 조회
+       * 마지막 수정 날짜 : 20.05.01
+       */
+        case "getEventById":
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $eventId = $vars['eventId'];
+            
+            if(!isExistEvent($eventId)){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "존재하지 않는 이벤트 입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            $res->result = getEventById($eventId);
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "이벤트 상세 조회";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
 
 
         /*

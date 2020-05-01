@@ -96,7 +96,7 @@ where e.is_main = 'Y';";
     $st = null;
     $pdo = null;
 
-    return $res;
+    return $res[0];
 }
 
 function getEventsMain()
@@ -143,6 +143,39 @@ ORDER BY status, date desc;";
     $pdo = null;
 
     return $res;
+}
+
+function isExistEvent($eventId){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM event e WHERE e.id= ?) AS exist;";
+
+
+    $st = $pdo->prepare($query);
+    $st->execute([$eventId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;
+    $pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+function getEventById($eventId)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select e.detail_image_url imageUrl
+from event e
+where e.id =?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$eventId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0];
 }
 
 // 3. 지역
