@@ -99,6 +99,51 @@ where e.is_main = 'Y';";
     return $res;
 }
 
+function getEventsMain()
+{
+    $pdo = pdoSqlConnect();
+    $query = "select e.id, e.detail_image_url ImageUrl
+from event e
+where (TIMESTAMPDIFF(minute,  CURRENT_TIME, e.end_date) > 0) or e.end_date is null
+order by e.end_date;";
+
+    $st = $pdo->prepare($query);
+    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+function getEventsDetail()
+{
+    $pdo = pdoSqlConnect();
+    $query = "select e.id        eventId,
+       e.image_url imageUrl,
+       e.title,
+       CASE
+           WHEN (TIMESTAMPDIFF(minute,  CURRENT_TIME, e.end_date) < 0) THEN '종료'
+           END as status,
+       CASE
+       WHEN (end_date is null) THEN '기한없음'
+       WHEN (TIMESTAMPDIFF(minute,  CURRENT_TIME, e.end_date) < 0) THEN CONCAT(date_format(e.start_date,  '%Y.%c.%e ~ '), date_format(e.end_date,  '%Y.%c.%e'))
+       ELSE CONCAT(TIMESTAMPDIFF(day, CURRENT_TIME, e.end_date),'일 남음' ) END as date
+from event e
+ORDER BY status, date desc;";
+
+    $st = $pdo->prepare($query);
+    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
 
 // 3. 지역
 function getDistricts()

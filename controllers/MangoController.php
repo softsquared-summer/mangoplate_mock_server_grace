@@ -254,15 +254,60 @@ try {
             $res->result = getEvent();
             $res->isSuccess = TRUE;
             $res->code = 200;
-            $res->message = "첫 이벤트 조회";            
+            $res->message = "첫 이벤트 조회";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
-            
-         /*
-         * API No. 3-4
-         * API Name : 지역구 목록
-         * 마지막 수정 날짜 : 20.04.30
-         */
+
+
+        /*
+        * API No. 2-1
+        * API Name : 첫 이벤트 조회
+        * 마지막 수정 날짜 : 20.05.01
+        */
+        case "getEvents":
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $type = $req->type;
+
+            if($type =='main'){
+                $res->result = getEventsMain();
+                $res->isSuccess = TRUE;
+                $res->code = 200;
+                $res->message = "이벤트 목록 조회(메인)";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }elseif($type =='detail'){
+                $res->result = getEventsDetail();
+                $res->isSuccess = TRUE;
+                $res->code = 200;
+                $res->message = "이벤트 목록 조회(상세)";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }else{
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "Query Params를 입력하세요 (type = main, detail)";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+
+        /*
+        * API No. 3-4
+        * API Name : 지역구 목록
+        * 마지막 수정 날짜 : 20.04.30
+        */
         case "getDistricts":
             http_response_code(200);
 
