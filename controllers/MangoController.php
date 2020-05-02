@@ -517,11 +517,12 @@ try {
 //            echo $query1;
 
 
-
+/*
             $type = $_GET['type'];
             $area = $_GET['area'];
 
 
+            // 자신과 제일 가까운 위치가 아니면 km 설정할 수 없게 막아야 함
 
             if(!($type == 'main') and !($type == 'map')){
                 $res->isSuccess = FALSE;
@@ -561,7 +562,7 @@ try {
             if($type == 'main'){
 
 
-            }
+            }*/
 
 //            print_r($areaIdArray);
 
@@ -582,43 +583,44 @@ try {
 
 
 
+            $type = $_GET['type'];
+            $area = $_GET['area'];
+
+            $temp = Array();
+
+            $temp[0]->restaurantId = 1;
+            $temp[0]->img = "https://i.imgur.com/p98abur.jpg";
+            $temp[0]->star = "YES";
+            $temp[0]->title = "1. 여산족발";
+            $temp[0]-> area= "금천구";
+            $temp[0]->distance = "21.91km";
+            $temp[0]->seenNum = "37,270";
+            $temp[0]->reviewNum= "29";
+            $temp[0]->rating= "4.2";
+            $temp[0]->ratingColor= "orange";
+
+            $temp[1]->restaurantId = 2;
+            $temp[1]->img = "https://i.imgur.com/Kh0d5zW.jpg";
+            $temp[1]->star = "NO";
+            $temp[1]->title = "2. 카페스미다";
+            $temp[1]-> area= "금천구";
+            $temp[1]->distance = "22.00km";
+            $temp[1]->seenNum = "5,368";
+            $temp[1]->reviewNum= "8";
+            $temp[1]->rating= "4.1";
+            $temp[1]->ratingColor= "gray";
 
 
-//            $temp = Array();
-//
-//            $temp[0]->restaurantId = 1;
-//            $temp[0]->img = "https://i.imgur.com/p98abur.jpg";
-//            $temp[0]->star = "YES";
-//            $temp[0]->title = "1. 여산족발";
-//            $temp[0]-> area= "금천구";
-//            $temp[0]->distance = "21.91km";
-//            $temp[0]->seenNum = "37,270";
-//            $temp[0]->reviewNum= "29";
-//            $temp[0]->rating= "4.2";
-//            $temp[0]->ratingColor= "orange";
-//
-//            $temp[1]->restaurantId = 2;
-//            $temp[1]->img = "https://i.imgur.com/Kh0d5zW.jpg";
-//            $temp[1]->star = "NO";
-//            $temp[1]->title = "2. 카페스미다";
-//            $temp[1]-> area= "금천구";
-//            $temp[1]->distance = "22.00km";
-//            $temp[1]->seenNum = "5,368";
-//            $temp[1]->reviewNum= "8";
-//            $temp[1]->rating= "4.1";
-//            $temp[1]->ratingColor= "gray";
-//
-//
-//            if ( $type == 'main' and $area == '금천구'){
-//                $res->result = $temp;
-//                $res->isSuccess = TRUE;
-//                $res->code = 200;
-//                $res->message = "식당 목록 조회 (추천순)";
-//            }else {
-//                $res->isSuccess = FALSE;
-//                $res->code = 400;
-//                $res->message = "개발 진행 중";
-//            }
+            if ( $type == 'main' and $area == '금천구'){
+                $res->result = $temp;
+                $res->isSuccess = TRUE;
+                $res->code = 200;
+                $res->message = "식당 목록 조회 (추천순)";
+            }else {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "개발 진행 중";
+            }
 
 //            $distirctsId = $vars["districtsId"];
 //
