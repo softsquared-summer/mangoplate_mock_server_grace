@@ -159,10 +159,10 @@ try {
                 $name = $req->name;
                 $profileUrl = $req->profileUrl;
 
-                if (!isset($id) or !isset($name) or !isset($profileUrl)) {
+                if (!isset($id) or !isset($name)) {
                     $res->isSuccess = FALSE;
                     $res->code = 400;
-                    $res->message = "id, name, profileUrl을 입력하세요.";
+                    $res->message = "id, name을 입력하세요.";
                     echo json_encode($res, JSON_NUMERIC_CHECK);
                     return;
                 }
@@ -174,19 +174,21 @@ try {
 //                    echo json_encode($res, JSON_NUMERIC_CHECK);
 //                    return;
 //                }
-                if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $profileUrl)) {
-                    $res->isSuccess = FALSE;
-                    $res->code = 400;
-                    $res->message = "회원가입 실패(사유: profileUrl의 Url 형식이 올바르지 않습니다.)";
-                    echo json_encode($res);
-                    break;
-                }
-                if (!preg_match("/\.(gif|jpg|png)$/i", $profileUrl)) {
-                    $res->isSuccess = FALSE;
-                    $res->code = 400;
-                    $res->message = "회원가입 실패(사유: profileUrl은 gif, jpg, png만 가능합니다.)";
-                    echo json_encode($res);
-                    break;
+                if (isset($profileUrl)) {
+                    if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $profileUrl)) {
+                        $res->isSuccess = FALSE;
+                        $res->code = 400;
+                        $res->message = "회원가입 실패(사유: profileUrl의 Url 형식이 올바르지 않습니다.)";
+                        echo json_encode($res);
+                        break;
+                    }
+                    if (!preg_match("/\.(gif|jpg|png)$/i", $profileUrl)) {
+                        $res->isSuccess = FALSE;
+                        $res->code = 400;
+                        $res->message = "회원가입 실패(사유: profileUrl은 gif, jpg, png만 가능합니다.)";
+                        echo json_encode($res);
+                        break;
+                    }
                 }
 
                 $email = $id . "@" . $type;
@@ -517,52 +519,60 @@ try {
 //            echo $query1;
 
 
-/*
+
             $type = $_GET['type'];
             $area = $_GET['area'];
 
-
-            // 자신과 제일 가까운 위치가 아니면 km 설정할 수 없게 막아야 함
-
-            if(!($type == 'main') and !($type == 'map')){
-                $res->isSuccess = FALSE;
-                $res->code = 400;
-                $res->message = "Query Params를 확인하세요. (type = main, map)";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-
-            if(!isset($area)){
-                $res->isSuccess = FALSE;
-                $res->code = 400;
-                $res->message = "Query Params를 확인하세요. (area = 1개 이상의 (지역명)을 입력하세요.)";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-
-            $area = str_replace(" ", "", $area);
-            $areaArray = explode(',', $area);
-            // $areaCount = count($areaArray);
-            $areaIdArray = getAreaId($areaArray);
-            // $areaIdArray = [1, 30, 29];
-            // where r.area_id = 1 or r.area_id = 30 or r.area_id = 29;
-
-            if ($areaIdArray == null) {
-                $res->isSuccess = FALSE;
-                $res->code = 400;
-                $res->message = "Query Params를 확인하세요. (area = 올바르지 않은 (지역명)이 있습니다.)";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-
-
-            //--------------------------------------
-
-            // 지역 1개 입력했다고 하고 해보자
-            if($type == 'main'){
-
-
-            }*/
+//
+//            // 자신과 제일 가까운 위치가 아니면 km 설정할 수 없게 막아야 함
+//
+//            if(!($type == 'main') and !($type == 'map')){
+//                $res->isSuccess = FALSE;
+//                $res->code = 400;
+//                $res->message = "Query Params를 확인하세요. (type = main, map)";
+//                echo json_encode($res, JSON_NUMERIC_CHECK);
+//                break;
+//            }
+//
+//            if(!isset($area)){
+//                $res->isSuccess = FALSE;
+//                $res->code = 400;
+//                $res->message = "Query Params를 확인하세요. (area = 1개 이상의 (지역명)을 입력하세요.)";
+//                echo json_encode($res, JSON_NUMERIC_CHECK);
+//                break;
+//            }
+//
+//            $area = str_replace(" ", "", $area);
+//            $areaArray = explode(',', $area);
+//            // $areaCount = count($areaArray);
+//            $areaIdArray = getAreaId($areaArray);
+//            // $areaIdArray = [1, 30, 29];
+//            // where r.area_id = 1 or r.area_id = 30 or r.area_id = 29;
+//
+//            if ($areaIdArray == null) {
+//                $res->isSuccess = FALSE;
+//                $res->code = 400;
+//                $res->message = "Query Params를 확인하세요. (area = 올바르지 않은 (지역명)이 있습니다.)";
+//                echo json_encode($res, JSON_NUMERIC_CHECK);
+//                break;
+//            }
+//
+//
+//            //--------------------------------------
+//
+//            // 지역 1개 입력했다고 하고 해보자
+//
+//            // Main
+//            if($type == 'main'){
+//
+//
+//            }
+//            elseif($type == 'map'){
+//
+//
+//
+//
+//            }
 
 //            print_r($areaIdArray);
 
@@ -579,12 +589,6 @@ try {
 //            if($type == 'main'){
 //
 //            }else
-
-
-
-
-            $type = $_GET['type'];
-            $area = $_GET['area'];
 
             $temp = Array();
 
