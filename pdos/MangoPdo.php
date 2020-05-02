@@ -160,6 +160,7 @@ function isExistEvent($eventId){
 
     return intval($res[0]["exist"]);
 }
+
 function getEventById($eventId)
 {
     $pdo = pdoSqlConnect();
@@ -179,6 +180,31 @@ where e.id =?;";
 }
 
 // 3. 지역
+function getNear($lat, $lng)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT a.district_id districtId,
+       a.id areaId,
+       a.name,
+
+       ROUND(6371 * acos(cos(radians(?)) * cos(radians(a.lat)) * cos(radians(a.lng)
+           - radians(?)) + sin(radians(?)) * sin(radians(a.lat))), 2)
+           AS distance
+FROM area a
+HAVING distance <= 10.0
+ORDER BY distance;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$lat, $lng, $lat]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
 function getDistricts()
 {
     $pdo = pdoSqlConnect();
@@ -231,6 +257,34 @@ order by a.name asc;";
     return $res;
 }
 
+// 4. 식당
+
+function getAreaId($areaArray)
+{
+    $areaIdArray = Array();
+    $pdo = pdoSqlConnect();
+    $query = "select a.id
+from area a
+where a.name =?;";
+
+    $st = $pdo->prepare($query);
+    foreach ($areaArray as $key => $value) {
+        $st->execute([$value]);
+        $st->setFetchMode(PDO::FETCH_ASSOC);
+        $res = $st->fetchAll();
+        if (isset($res[0]['id'])) {
+            $areaIdArray[$key] = $res[0]['id'];
+        } else {
+            return null;
+        }
+    }
+
+    $st = null;
+    $pdo = null;
+
+//    print_r($areaIdArray);
+    return $areaIdArray;
+}
 //
 ////READ
 //function testDetail($testNo)

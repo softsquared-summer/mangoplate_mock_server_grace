@@ -224,7 +224,7 @@ try {
             } else {
                 $res->isSuccess = FALSE;
                 $res->code = 400;
-                $res->message = "Query Params를 입력하세요 (type = email, kakao, facebook)";
+                $res->message = "Query Params를 확인하세요. (type = email, kakao, facebook)";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
@@ -337,6 +337,51 @@ try {
             break;
 
         /*
+        * API No. 3-1
+        * API Name : 내근처 지역 목록
+        * 마지막 수정 날짜 : 20.05.02
+        */
+        case "getNear":
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+            $lat = $_GET['lat'];
+            $lng = $_GET['lng'];
+
+            if(!isset($lng) or !isset($lat)){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "Query Params를 입력하세요.(lat = (위도), lng = (경도))";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            $result = getNear($lat, $lng);
+
+            if($result == null){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "10km 이내의 지역이 없습니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            $res->result = getNear($lat, $lng);
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "내근처 지역 목록 조회";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+        /*
         * API No. 3-4
         * API Name : 지역구 목록
         * 마지막 수정 날짜 : 20.04.30
@@ -415,45 +460,126 @@ try {
                 return;
             }
 
-            $type = $_GET['type'];
 
+//            echo $area;
+//            $area = str_replace(" ", "", $area);
+//            echo $area;
+//            $myArray = explode(',', $area);
+//
+//            print_r($myArray);
+//
+//            echo $myArray[0];
+
+
+//            $query = "SELECT EXISTS(SELECT * FROM user u WHERE u.email= ?) AS exist;";
+//            $value = "가나다라마바사";
+//
+//            $query1 = str_replace("u.email=", "u.name=", $query);
+//            echo $query1;
+
+
+
+            $type = $_GET['type'];
             $area = $_GET['area'];
 
-            $temp = Array();
-
-            $temp[0]->restaurantId = 1;
-            $temp[0]->img = "https://i.imgur.com/p98abur.jpg";
-            $temp[0]->star = "YES";
-            $temp[0]->title = "1. 여산족발";
-            $temp[0]-> area= "금천구";
-            $temp[0]->distance = "21.91km";
-            $temp[0]->seenNum = "37,270";
-            $temp[0]->reviewNum= "29";
-            $temp[0]->rating= "4.2";
-            $temp[0]->ratingColor= "orange";
-
-            $temp[1]->restaurantId = 2;
-            $temp[1]->img = "https://i.imgur.com/Kh0d5zW.jpg";
-            $temp[1]->star = "NO";
-            $temp[1]->title = "2. 카페스미다";
-            $temp[1]-> area= "금천구";
-            $temp[1]->distance = "22.00km";
-            $temp[1]->seenNum = "5,368";
-            $temp[1]->reviewNum= "8";
-            $temp[1]->rating= "4.1";
-            $temp[1]->ratingColor= "gray";
 
 
-            if ( $type == 'main' and $area == '금천구'){
-                $res->result = $temp;
-                $res->isSuccess = TRUE;
-                $res->code = 200;
-                $res->message = "식당 목록 조회 (추천순)";
-            }else {
+            if(!($type == 'main') and !($type == 'map')){
                 $res->isSuccess = FALSE;
                 $res->code = 400;
-                $res->message = "개발 진행 중";
+                $res->message = "Query Params를 확인하세요. (type = main, map)";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
             }
+
+            if(!isset($area)){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "Query Params를 확인하세요. (area = 1개 이상의 (지역명)을 입력하세요.)";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            $area = str_replace(" ", "", $area);
+            $areaArray = explode(',', $area);
+            // $areaCount = count($areaArray);
+            $areaIdArray = getAreaId($areaArray);
+            // $areaIdArray = [1, 30, 29];
+            // where r.area_id = 1 or r.area_id = 30 or r.area_id = 29;
+
+            if ($areaIdArray == null) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "Query Params를 확인하세요. (area = 올바르지 않은 (지역명)이 있습니다.)";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+
+            //--------------------------------------
+
+            // 지역 1개 입력했다고 하고 해보자
+            if($type == 'main'){
+
+
+            }
+
+//            print_r($areaIdArray);
+
+
+
+//            if(!($type == 'main') and !($type == 'map')){
+//                $res->isSuccess = FALSE;
+//                $res->code = 400;
+//                $res->message = "Query Params를 확인하세요. (type = main, map)";
+//                echo json_encode($res, JSON_NUMERIC_CHECK);
+//                break;
+//            }
+//
+//            if($type == 'main'){
+//
+//            }else
+
+
+
+
+
+
+//            $temp = Array();
+//
+//            $temp[0]->restaurantId = 1;
+//            $temp[0]->img = "https://i.imgur.com/p98abur.jpg";
+//            $temp[0]->star = "YES";
+//            $temp[0]->title = "1. 여산족발";
+//            $temp[0]-> area= "금천구";
+//            $temp[0]->distance = "21.91km";
+//            $temp[0]->seenNum = "37,270";
+//            $temp[0]->reviewNum= "29";
+//            $temp[0]->rating= "4.2";
+//            $temp[0]->ratingColor= "orange";
+//
+//            $temp[1]->restaurantId = 2;
+//            $temp[1]->img = "https://i.imgur.com/Kh0d5zW.jpg";
+//            $temp[1]->star = "NO";
+//            $temp[1]->title = "2. 카페스미다";
+//            $temp[1]-> area= "금천구";
+//            $temp[1]->distance = "22.00km";
+//            $temp[1]->seenNum = "5,368";
+//            $temp[1]->reviewNum= "8";
+//            $temp[1]->rating= "4.1";
+//            $temp[1]->ratingColor= "gray";
+//
+//
+//            if ( $type == 'main' and $area == '금천구'){
+//                $res->result = $temp;
+//                $res->isSuccess = TRUE;
+//                $res->code = 200;
+//                $res->message = "식당 목록 조회 (추천순)";
+//            }else {
+//                $res->isSuccess = FALSE;
+//                $res->code = 400;
+//                $res->message = "개발 진행 중";
+//            }
 
 //            $distirctsId = $vars["districtsId"];
 //
