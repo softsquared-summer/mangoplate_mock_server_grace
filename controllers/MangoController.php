@@ -155,22 +155,61 @@ try {
 
             } elseif ($type == 'kakao') {
 
-                $at = $req->at;
+                $id = $req->id;
+                $name = $req->name;
+                $profileUrl = $req->profileUrl;
 
-                if (!isset($at)) {
+                if (!isset($id) or !isset($name) or !isset($profileUrl)) {
                     $res->isSuccess = FALSE;
                     $res->code = 400;
-                    $res->message = "access token을 입력하세요.";
+                    $res->message = "id, name, profileUrl을 입력하세요.";
                     echo json_encode($res, JSON_NUMERIC_CHECK);
                     return;
                 }
 
-                if (!isValidKakaoUser($at)) {
+//                if (!isValidKakaoUser($id)) {
+//                    $res->isSuccess = FALSE;
+//                    $res->code = 400;
+//                    $res->message = "유효하지 않은 사용자 입니다";
+//                    echo json_encode($res, JSON_NUMERIC_CHECK);
+//                    return;
+//                }
+                if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $profileUrl)) {
                     $res->isSuccess = FALSE;
                     $res->code = 400;
-                    $res->message = "유효하지 않은 사용자 입니다";
+                    $res->message = "회원가입 실패(사유: profileUrl의 Url 형식이 올바르지 않습니다.)";
+                    echo json_encode($res);
+                    break;
+                }
+                if (!preg_match("/\.(gif|jpg|png)$/i", $profileUrl)) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "회원가입 실패(사유: profileUrl은 gif, jpg, png만 가능합니다.)";
+                    echo json_encode($res);
+                    break;
+                }
+
+                $email = $id . "@" . $type;
+                // 회원가입 시킬지 말지
+                if (!isExistUser($email)) {
+
+                    postUser($email, '', $id, $profileUrl, '');
+                    $jwt = getJWToken($email, '', JWT_SECRET_KEY);
+                    $res->result->jwt = $jwt;
+                    $res->isSuccess = TRUE;
+                    $res->code = 200;
+                    $res->message = "회원가입 및 로그인 성공";
                     echo json_encode($res, JSON_NUMERIC_CHECK);
-                    return;
+                    break;
+
+                } else {
+                    $jwt = getJWToken($email, '', JWT_SECRET_KEY);
+                    $res->result->jwt = $jwt;
+                    $res->isSuccess = TRUE;
+                    $res->code = 200;
+                    $res->message = "로그인 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
                 }
 
             } elseif ($type == 'facebook') {
