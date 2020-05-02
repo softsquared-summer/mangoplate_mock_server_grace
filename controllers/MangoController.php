@@ -429,8 +429,8 @@ try {
             $temp[0]->distance = "21.91km";
             $temp[0]->seenNum = "37,270";
             $temp[0]->reviewNum= "29";
-            $temp[0]->reviewNum= "4.2";
-            $temp[0]->reviewNum= "orange";
+            $temp[0]->rating= "4.2";
+            $temp[0]->ratingColor= "orange";
 
             $temp[1]->restaurantId = 2;
             $temp[1]->img = "https://i.imgur.com/Kh0d5zW.jpg";
@@ -440,15 +440,15 @@ try {
             $temp[1]->distance = "22.00km";
             $temp[1]->seenNum = "5,368";
             $temp[1]->reviewNum= "8";
-            $temp[1]->reviewNum= "4.1";
-            $temp[1]->reviewNum= "gray";
+            $temp[1]->rating= "4.1";
+            $temp[1]->ratingColor= "gray";
 
 
             if ( $type == 'main' and $area == '금천구'){
                 $res->result = $temp;
                 $res->isSuccess = TRUE;
                 $res->code = 200;
-                $res->message = "지역 목록 조회";
+                $res->message = "식당 목록 조회 (추천순)";
             }else {
                 $res->isSuccess = FALSE;
                 $res->code = 400;
