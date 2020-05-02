@@ -186,10 +186,9 @@ function getNear($lat, $lng)
     $query = "SELECT a.district_id districtId,
        a.id areaId,
        a.name,
-
-       ROUND(6371 * acos(cos(radians(?)) * cos(radians(a.lat)) * cos(radians(a.lng)
-           - radians(?)) + sin(radians(?)) * sin(radians(a.lat))), 2)
-           AS distance
+       CONCAT(	ROUND(6371*acos(cos(radians(?))*cos(radians(a.lat))*cos(radians(a.lng)
+	-radians(?))+sin(radians(?))*sin(radians(a.lat))), 2), 'km')
+	AS distance
 FROM area a
 HAVING distance <= 10.0
 ORDER BY distance;";
