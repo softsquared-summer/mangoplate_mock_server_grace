@@ -47,21 +47,21 @@ function postUser($email, $pw1, $name, $profileUrl, $phone)
     
 }
 
-function getUserId()
-{
-    $pdo = pdoSqlConnect();
-    $query = "select d.id distinctsId, d.name from district d";
-
-    $st = $pdo->prepare($query);
-    $st->execute();
-    $st->setFetchMode(PDO::FETCH_ASSOC);
-    $res = $st->fetchAll();
-
-    $st = null;
-    $pdo = null;
-
-    return $res;
-}
+//function getUserId()
+//{
+//    $pdo = pdoSqlConnect();
+//    $query = "select d.id distinctsId, d.name from district d";
+//
+//    $st = $pdo->prepare($query);
+//    $st->execute();
+//    $st->setFetchMode(PDO::FETCH_ASSOC);
+//    $res = $st->fetchAll();
+//
+//    $st = null;
+//    $pdo = null;
+//
+//    return $res;
+//}
 
 function isValidUser($email, $pw)
 {
@@ -257,6 +257,20 @@ order by a.name asc;";
 }
 
 // 4. 식당
+function getUserId($userEmail){
+    $pdo = pdoSqlConnect();
+    $query = "select id from user where email = ?";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userEmail]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0]['id'];
+}
 
 function getAreaId($areaArray)
 {
@@ -284,6 +298,72 @@ where a.name =?;";
 //    print_r($areaIdArray);
     return $areaIdArray;
 }
+
+function getNearRestaurants($lat, $lng, $userId, $nearestAreaId)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT area_id areaId,
+       AREA.a_name area,
+       id                                                restaurantId,
+       image_url                                         img,
+       IF(FUTURE.star is null, 'NO', star)               star,
+       name                                              title,
+       CONCAT(ROUND(6371 * acos(cos(radians($lat)) * cos(radians(lat)) * cos(radians(lng)
+           - radians($lng)) + sin(radians($lat)) * sin(radians(lat))), 2), 'km')
+           AS                                            distance,
+       IF(SEEN.seenNum is null, 0, seenNum)              seenNum,
+       REVIEW.reviewNum,
+       RATING.rating,
+       CASE
+           WHEN (REVIEW.reviewNum = 0) THEN null
+           WHEN (REVIEW.reviewNum <= 3) THEN 'gray'
+           WHEN (REVIEW.reviewNum > 3) THEN 'orange' END ratingColor
+FROM restaurant
+         LEFT JOIN (select *
+                    from rating) RATING ON RATING.restaurant_id = id
+         LEFT JOIN (select restaurant_id, FORMAT(num, 0) seenNum
+                    from seen) SEEN ON SEEN.restaurant_id = id
+         LEFT JOIN (select restaurant_id,
+                           IF(state = 'Y', 'YES', 'NO') star
+                    from future
+                    where user_id = ?) FUTURE ON FUTURE.restaurant_id = id
+         LEFT JOIN (select restaurant_id, COUNT(*) reviewNum
+                    from review
+                    group by restaurant_id) REVIEW ON REVIEW.restaurant_id = id
+         LEFT JOIN (select *
+                    from (select rv.restaurant_id, REIMG.image_url, rv.created_at
+                          from review rv
+                                   LEFT JOIN (select *
+                                              from review_image
+                                              group by review_id) REIMG ON REIMG.review_id = rv.id
+                          where image_url is not null
+                          order by restaurant_id, created_at asc
+                          LIMIT 18446744073709551615) as a
+                    group by a.restaurant_id) IMG ON IMG.restaurant_id = id
+         JOIN(select a.id a_id, a.name a_name from area a) AREA ON AREA.a_id = restaurant.area_id
+where area_id = ?
+order by seenNum desc";
+
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userId, $nearestAreaId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    // title 앞에 번호 붙이기
+    foreach ($res as $key => $value) {
+
+        $res[$key]['title'] = ($key + 1) . ". " . $res[$key]['title'];
+        
+    }
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+
 //
 ////READ
 //function testDetail($testNo)
