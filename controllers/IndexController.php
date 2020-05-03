@@ -11,6 +11,26 @@ try {
     switch ($handler) {
         case "index":
             // echo "API Server";
+            $kind = $_GET['kind'];
+//            $area = '(' . $area . ')';
+//            print($area);
+
+
+            $realKind = '(';
+
+            $temp = str_replace(" ", "", $kind);
+            $kindArray = explode(',', $temp);
+
+            foreach ($kindArray as $key => $value){
+                // $kindArray[$key] ='\''.$kindArray[$key].'\'';
+                $realKind = $realKind . '\''.$kindArray[$key].'\'';
+                if(!마지막){
+                    $realKind = $realKind .',';
+                }else {
+                    $realKind = $realKind .')';
+                }
+            }
+
 
             // $res->result = facebook();
             $res->isSuccess = TRUE;

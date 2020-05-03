@@ -46,7 +46,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/districts/{districtsId}', ['MangoController', 'getAreas']);
 
     // 4. 식당
-    $r->addRoute('GET', '/restaurants', ['MangoController', 'getRestaurants']);
+    $r->addRoute('GET', '/restaurants', ['RestaurantController', 'getRestaurants']);
 
 });
 
@@ -103,11 +103,11 @@ switch ($routeInfo[0]) {
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/MangoController.php';
                 break;
-            /*case 'ProductController':
+            case 'RestaurantController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
-                require './controllers/ProductController.php';
+                require './controllers/RestaurantController.php';
                 break;
-            case 'SearchController':
+            /*case 'SearchController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/SearchController.php';
                 break;

@@ -302,15 +302,13 @@ where a.name =?;";
 function getNearRestaurants($lat, $lng, $userId, $nearestAreaId)
 {
     $pdo = pdoSqlConnect();
-    $query = "SELECT area_id areaId,
-       AREA.a_name area,
+    $query = "SELECT area_id                                           areaId,
+       AREA.a_name                                       area,
        id                                                restaurantId,
        image_url                                         img,
        IF(FUTURE.star is null, 'NO', star)               star,
        name                                              title,
-       CONCAT(ROUND(6371 * acos(cos(radians($lat)) * cos(radians(lat)) * cos(radians(lng)
-           - radians($lng)) + sin(radians($lat)) * sin(radians(lat))), 2), 'km')
-           AS                                            distance,
+       CONCAT(DIST.dist, 'km')                           distance,
        IF(SEEN.seenNum is null, 0, seenNum)              seenNum,
        REVIEW.reviewNum,
        RATING.rating,
@@ -321,7 +319,7 @@ function getNearRestaurants($lat, $lng, $userId, $nearestAreaId)
 FROM restaurant
          LEFT JOIN (select *
                     from rating) RATING ON RATING.restaurant_id = id
-         LEFT JOIN (select restaurant_id, FORMAT(num, 0) seenNum
+         LEFT JOIN (select restaurant_id, num seenNum
                     from seen) SEEN ON SEEN.restaurant_id = id
          LEFT JOIN (select restaurant_id,
                            IF(state = 'Y', 'YES', 'NO') star
@@ -341,8 +339,13 @@ FROM restaurant
                           LIMIT 18446744073709551615) as a
                     group by a.restaurant_id) IMG ON IMG.restaurant_id = id
          JOIN(select a.id a_id, a.name a_name from area a) AREA ON AREA.a_id = restaurant.area_id
+         JOIN (select restaurant.id                                                                 rId,
+                      ROUND(6371 * acos(cos(radians($lat)) * cos(radians(lat)) * cos(radians(lng)
+                          - radians($lng)) + sin(radians($lat)) * sin(radians(lat))), 2) dist
+               from restaurant) DIST ON DIST.rId = restaurant.id
 where area_id = ?
-order by seenNum desc";
+  and DIST.dist < 3
+order by rating desc;";
 
 
     $st = $pdo->prepare($query);
@@ -355,6 +358,99 @@ order by seenNum desc";
 
         $res[$key]['title'] = ($key + 1) . ". " . $res[$key]['title'];
         
+    }
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+
+function getRestaurants($lat, $lng, $userId, $area, $kind, $price, $radius, $order, $category, $parking)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT area_id                                           areaId,
+       AREA.a_name                                       area,
+       id                                                restaurantId,
+       image_url                                         img,
+       IF(FUTURE.star is null, 'NO', star)               star,
+       name                                              title,
+       CONCAT(DIST.dist, 'km')                           distance,
+       IF(SEEN.seenNum is null, 0, seenNum)              seenNum,
+       REVIEW.reviewNum,
+       RATING.rating,
+       CASE
+           WHEN (REVIEW.reviewNum = 0) THEN null
+           WHEN (REVIEW.reviewNum <= 3) THEN 'gray'
+           WHEN (REVIEW.reviewNum > 3) THEN 'orange' END ratingColor
+FROM restaurant
+         LEFT JOIN (select *
+                    from rating) RATING ON RATING.restaurant_id = id
+         LEFT JOIN (select restaurant_id, num seenNum
+                    from seen) SEEN ON SEEN.restaurant_id = id
+         LEFT JOIN (select restaurant_id,
+                           IF(state = 'Y', 'YES', 'NO') star
+                    from future
+                    where user_id = ?) FUTURE ON FUTURE.restaurant_id = id
+         LEFT JOIN (select restaurant_id, COUNT(*) reviewNum
+                    from review
+                    group by restaurant_id) REVIEW ON REVIEW.restaurant_id = id
+         LEFT JOIN (select *
+                    from (select rv.restaurant_id, REIMG.image_url, rv.created_at
+                          from review rv
+                                   LEFT JOIN (select *
+                                              from review_image
+                                              group by review_id) REIMG ON REIMG.review_id = rv.id
+                          where image_url is not null
+                          order by restaurant_id, created_at asc
+                          LIMIT 18446744073709551615) as a
+                    group by a.restaurant_id) IMG ON IMG.restaurant_id = id
+         JOIN(select a.id a_id, a.name a_name from area a) AREA ON AREA.a_id = restaurant.area_id
+         JOIN (select restaurant.id                                                                 rId,
+                      ROUND(6371 * acos(cos(radians($lat)) * cos(radians(lat)) * cos(radians(lng)
+                          - radians($lng)) + sin(radians($lat)) * sin(radians(lat))), 2) dist
+               from restaurant) DIST ON DIST.rId = restaurant.id
+         LEFT JOIN (select restaurant_id, price, parking, kind from information) INFO ON INFO.restaurant_id = id";
+
+
+/*    where area_id = ?
+  and DIST.dist < 3
+order by rating desc;";*/
+
+
+    $filter = " where " . $area ;
+    if (isset($kind)) {
+        $filter = $filter . " and " . $kind;
+    }
+    if (isset($price)) {
+        $filter = $filter . " and " . $price ;
+    }
+    if (isset($radius)) {
+        $filter = $filter . " and " . $radius ;
+    }
+    if (isset($category)) {
+        $filter = $filter . " and " . $category;
+    }
+    if (isset($parking)) {
+        $filter = $filter . " and " . $parking;
+    }
+    $filter = $filter . " " . $order . ";";
+
+    $query = $query . $filter;
+
+    // echo $query;
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    // title 앞에 번호 붙이기
+    foreach ($res as $key => $value) {
+
+        $res[$key]['title'] = ($key + 1) . ". " . $res[$key]['title'];
+
     }
 
     $st = null;
