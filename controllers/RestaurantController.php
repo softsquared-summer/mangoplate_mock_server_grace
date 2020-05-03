@@ -81,7 +81,7 @@ try {
             if(!isset($radius)){
 
                 if(!isset($area)){
-                    echo "이게 나와야 해";
+                    // echo "이게 나와야 해";
                     // $area X $radius X 일 때
                     $radius = 'DIST.dist < 3';
                 }
