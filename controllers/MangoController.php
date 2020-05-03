@@ -481,7 +481,8 @@ try {
             }
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
-            
+
+
 //        /*
 //         * API No. 0
 //         * API Name : 테스트 Path Variable API

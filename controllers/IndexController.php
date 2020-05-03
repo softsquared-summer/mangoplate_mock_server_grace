@@ -16,7 +16,7 @@ try {
 //            print($area);
 
 
-            $realKind = '(';
+/*            $realKind = '(';
 
             $temp = str_replace(" ", "", $kind);
             $kindArray = explode(',', $temp);
@@ -29,7 +29,7 @@ try {
                 }else {
                     $realKind = $realKind .')';
                 }
-            }
+            }*/
 
 
             // $res->result = facebook();
