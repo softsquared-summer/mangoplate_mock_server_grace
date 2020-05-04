@@ -51,6 +51,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     // 5. 검색어
     $r->addRoute('GET', '/keywords', ['MangoController', 'getKeywords']);
 
+    // 13. EAT딜
+    $r->addRoute('GET', '/eatdeals', ['MangoController', 'getEatdeals']);
+
 });
 
 // Fetch method and URI from somewhere

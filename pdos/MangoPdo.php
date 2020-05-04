@@ -256,6 +256,29 @@ order by a.name asc;";
     return $res;
 }
 
+function getEatdealAreas($distirctsId)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select id, name
+from area
+         RIGHT JOIN (select RES.area_id
+                     from eatdeal
+                              LEFT JOIN (select id restaurant_id, area_id from restaurant) RES
+                                        ON RES.restaurant_id = eatdeal.restaurant_id
+                     group by RES.area_id) AREA ON AREA.area_id = area.id
+where district_id = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$distirctsId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
 // 4. 식당
 function getUserId($userEmail){
     $pdo = pdoSqlConnect();
@@ -416,7 +439,8 @@ FROM restaurant
 
 /*    where area_id = ?
   and DIST.dist < 3
-order by rating desc;";*/
+order by rating desc
+limit ;";*/
 
 
     $filter = " where " . $area ;
@@ -476,6 +500,62 @@ group by keyword;";
     $st->execute();
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+// 5. 검색어
+function getEatdeals($area)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select eatdeal.id                                                                    eatdealId,
+       AREA.area_id areaId,
+       IMG.image_url imageUrl,
+       status,
+       CONCAT(ROUND(((original_price - sale_price) / original_price) * 100, 0), '%') percent,
+       FORMAT(original_price, 0)                                                     originalPrice,
+       FORMAT(sale_price, 0)                                                         salePrice,
+       title,
+       item,
+       DES.description,
+       CASE
+           WHEN (quantity = 0) THEN '모두 판매되었습니다.'
+           WHEN (quantity != 0 and quantity < 10) THEN CONCAT(quantity, '개 남음') END  quantity
+from eatdeal
+         JOIN (select eatdeal_id, description from eatdeal_detail) DES ON DES.eatdeal_id = id
+         JOIN (select eatdeal_id, image_url
+               from eatdeal_image
+               group by eatdeal_id) IMG ON IMG.eatdeal_id = id
+         JOIN (select eatdeal.id, RES.area_id
+               from eatdeal
+                        LEFT JOIN (select id restaurant_id, area_id from restaurant) RES
+                                  ON RES.restaurant_id = eatdeal.restaurant_id) AREA ON AREA.id = DES.eatdeal_id";
+
+    $query = $query . $area;
+//     echo $query;
+    $st = $pdo->prepare($query);
+    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    foreach ($res as $key => $value) {
+//        unset($res[$key]['area_id']);
+//        echo getType($res[$key]);
+
+
+        if($res[$key]['quantity'] == '모두 판매되었습니다.'){
+
+            unset($res[$key]['percent']);
+            unset($res[$key]['originalPrice']);
+            unset($res[$key]['salePrice']);
+            unset($res[$key]['status']);
+        }
+
+    }
+
 
     $st = null;
     $pdo = null;

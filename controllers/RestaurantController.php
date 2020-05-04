@@ -321,6 +321,10 @@ try {
             }
 
 
+            // paging 처리하는 것 받기
+            $page = $_GET['page'];
+            $parking = $_GET['per'];
+
 
 
             if($type == 'main'){

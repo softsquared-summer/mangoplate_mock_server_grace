@@ -467,6 +467,8 @@ try {
                 return;
             }
 
+            $type = $_GET['type'];
+
             $distirctsId = $vars["districtsId"];
 
             if (!isValidDistrict($distirctsId)) {
@@ -474,10 +476,22 @@ try {
                 $res->code = 400;
                 $res->message = "해당 지역구가 없습니다.";
             } else {
-                $res->result = getAreas($distirctsId);
-                $res->isSuccess = TRUE;
-                $res->code = 200;
-                $res->message = "지역 목록 조회";
+
+                if (empty($type)) {
+                    $res->result = getAreas($distirctsId);
+                    $res->isSuccess = TRUE;
+                    $res->code = 200;
+                    $res->message = "지역 목록 조회";
+                } elseif ($type == 'eatdeal') {
+                    $res->result = getEatdealAreas($distirctsId);
+                    $res->isSuccess = TRUE;
+                    $res->code = 200;
+                    $res->message = "지역 목록 조회 - EAT딜";
+                }else{
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "Query params를 확인하세요. (type은 비워져 있거나, eatdeal 만 가능합니다.)";
+                }
             }
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
@@ -505,6 +519,68 @@ try {
             $res->isSuccess = TRUE;
             $res->code = 200;
             $res->message = "추천 검색어 목록";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+
+        /*
+        * API No. 13-1
+        * API Name : EAT딜 목록
+        * 마지막 수정 날짜 : 20.05.04
+        */
+        case "getEatdeals":
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+
+            $area = $_GET['area'];
+
+            if(!isset($area)){
+
+            }else{
+
+                // echo $area;
+                $realArea = "(";
+
+                $temp = str_replace(" ", "", $area);
+                $areaArray = explode(',', $temp);
+
+                $areaIdArray = getAreaId($areaArray);
+                // print_r($areaIdArray);
+                if ($areaIdArray == null) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "Query Params를 확인하세요. (area = 올바르지 않은 (지역명)이 있습니다.)";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+
+                foreach ($areaIdArray as $key => $value){
+                    $realArea = $realArea . '\''.$areaIdArray[$key].'\'';
+                    if ($value === end($areaIdArray)){
+                        $realArea = $realArea . ')';
+                    }else{
+                        $realArea = $realArea . ',';
+                    }
+                }
+
+                $area = ' where area_id in '. $realArea;
+            }
+
+            $res->result = getEatdeals($area);
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "EAT딜 목록";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 //        /*
