@@ -583,6 +583,51 @@ try {
             $res->message = "EAT딜 목록";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
+
+        /*
+        * API No. 13-2
+        * API Name : EAT딜 상세 조회
+        * 마지막 수정 날짜 : 20.05.04
+        */
+        case "getEatdealDetail":
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $eatdealId = $vars["eatdealId"];
+
+            if(!isExistEatdeal($eatdealId)){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "해당 EAT딜 식별자가 없습니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            $temp = Array();
+            $temp2 = Array();
+            $temp3 = Array();
+            $temp['img'] = getEatdealImg($eatdealId);
+            $temp2 = getEatdeal($eatdealId);
+            $temp3 =getEatdealDetail($eatdealId);
+            $real = array_merge($temp, $temp2, $temp3);
+
+            $res->result = $real;
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "EAT딜 상세 조회";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+
 //        /*
 //         * API No. 0
 //         * API Name : 테스트 Path Variable API

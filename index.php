@@ -53,6 +53,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 
     // 13. EAT딜
     $r->addRoute('GET', '/eatdeals', ['MangoController', 'getEatdeals']);
+    $r->addRoute('GET', '/eatdeals/{eatdealId}', ['MangoController', 'getEatdealDetail']);
 
 });
 

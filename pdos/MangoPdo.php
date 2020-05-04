@@ -562,6 +562,107 @@ from eatdeal
 
     return $res;
 }
+function isExistEatdeal($eatdealId){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM eatdeal e WHERE e.id= ?) AS exist;";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$eatdealId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;
+    $pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+function getEatdeal($eatdealId)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select restaurant_id restaurantId,
+CONCAT(item, ' ', percent, ' 할인')                                                     tag,
+       title,
+       item,
+       IF(start_at is null, CONCAT('93일 (', date_format(NOW(), '%Y-%m-%d'), ' ~ ',
+                                   date_format(DATE_ADD(NOW(), INTERVAL 92 DAY), '%Y-%m-%d'), ')'),
+          CONCAT(date_format(start_at, '%Y-%m-%d'), ' ~ ', date_format(end_at, '%Y-%m-%d'))) term,
+       PERCENT.percent,
+       FORMAT(original_price, 0)                                                             originalPrice,
+       FORMAT(sale_price, 0)                                                                 salePrice
+
+from eatdeal
+         JOIN(select id,
+                     CONCAT(ROUND(((original_price - sale_price) / original_price) * 100, 0), '%') percent
+              from eatdeal) PERCENT ON PERCENT.id = eatdeal.id
+where eatdeal.id = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$eatdealId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0];
+}
+function getEatdealImg($eatdealId)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select num, image_url imageUrl
+from eatdeal_image
+where eatdeal_id = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$eatdealId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    // print_r($res);
+    return $res;
+}
+function getEatdealDetail($eatdealId)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select description,
+       place_info place,
+       restaurant_info restaurant,
+       menu_info menu,
+       note_info note
+from eatdeal_detail
+where eatdeal_id =?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$eatdealId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $res[0]['benefit']='BC카드로 EAT딜 결제 시, 결제금액의 5% 추가 할인 (청구할인)
+페이북 또는 BC카드 앱 내 마이태그 이용 시, 결제금액의 5% 추가 할인 (청구 할인)
+익월 20일경 청구할인 예정이며, 청구 할인된 내용은 익월 또는 익익월 명세서를 통해 확인 가능합니다.';
+    $res[0]['how']='구매하신 EAT딜은 최신 버전 앱에서만 사용 가능합니다.
+결제 시 망고플레이트 앱 > 내정보 > 구매한 EAT딜을 선택하여 매장에 비치된 QR코드를 스캔합니다.
+QR코드 스캔이 불가능할 시 매장 직원에게 화면 하단 12자리 숫자 코드를 보여주세요.
+사용 처리가 완료된 EAT딜은 재사용 및 환불 불가합니다.';
+    $res[0]['refund'] = '상품 사용 기간 내 환불 요청에 한해 구매 금액 전액 환불, 상품 사용 기간 이후 환불 요청 건은 수수료 10%를 제외한 금액 환불을 원칙으로 합니다.
+환불 기간 연장은 불가합니다.
+구매 후 93일 이내 환불 요청: 100% 환불
+구매 후 93일 이후 환불 요청: 90% 환불
+환불은 구매 시 사용하였던 결제수단으로 환불됩니다.';
+    $res[0]['inquiry']='cs@mangoplate.com';
+    $st = null;
+    $pdo = null;
+
+    return $res[0];
+}
+
+
 //
 ////READ
 //function testDetail($testNo)
