@@ -459,7 +459,29 @@ order by rating desc;";*/
     return $res;
 }
 
+// 5. 검색어
+function getKeywords()
+{
+    $pdo = pdoSqlConnect();
+    $query = "select keyword
+from keyword
+         JOIN (select COUNT(*) cnt, keyword kw
+               from keyword
+               group by kw
+               order by cnt desc
+               limit 6) CNT ON CNT.kw = keyword.keyword
+group by keyword;";
 
+    $st = $pdo->prepare($query);
+    $st->execute();
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
 //
 ////READ
 //function testDetail($testNo)

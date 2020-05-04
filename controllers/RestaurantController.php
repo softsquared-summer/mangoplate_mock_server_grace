@@ -13,7 +13,7 @@ try {
         /*
         * API No. 4-1
         * API Name : 식당 목록 (추천순)
-        * 마지막 수정 날짜 : 20.05.02
+        * 마지막 수정 날짜 : 20.05.03
         */
         case "getRestaurants":
             http_response_code(200);

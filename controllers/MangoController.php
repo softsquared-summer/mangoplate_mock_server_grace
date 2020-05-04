@@ -482,7 +482,31 @@ try {
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 
+        /*
+        * API No. 5-1
+        * API Name : 추천 검색어 목록
+        * 마지막 수정 날짜 : 20.05.04
+        */
+        case "getKeywords":
+            http_response_code(200);
 
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $res->result = getKeywords();
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "추천 검색어 목록";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
 //        /*
 //         * API No. 0
 //         * API Name : 테스트 Path Variable API
