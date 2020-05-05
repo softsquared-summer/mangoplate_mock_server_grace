@@ -593,7 +593,7 @@ limit ;";*/
 
     $query = $query . $filter;
 
-     echo $query;
+     // echo $query;
 
     $st = $pdo->prepare($query);
     $st->execute([$userId]);
