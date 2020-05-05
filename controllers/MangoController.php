@@ -324,103 +324,138 @@ try {
                 return;
             }
 
-//            $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
-//            $userEmail = $data->email;
-//
-//            $userId = getUserId($userEmail);
+            $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
+            $userEmail = $data->email;
 
+            $userId = getUserId($userEmail);
+            
+            // 몇 개 들어왔는지 확인
+            $num = 0;
+            
 
-            $email = $req->email;
             $name = $req->name;
             $profileUrl = $req->profileUrl;
-            $phone = $req->phone;;
+            $phone = $req->phone;
 
             // 비었는지
-            if (!isset($email) or !isset($name) or !isset($profileUrl) or !isset($phone)) {
+            if (!isset($name) and !isset($profileUrl) and !isset($phone)) {
                 $res->isSuccess = FALSE;
                 $res->code = 400;
-                $res->message = "업데이트할 요소가 없습니다.";
+                $res->message = "업데이트할 요소가 없습니다. (name, profileUrl, phone 중 하나를 입력하세요.)";
                 echo json_encode($res);
                 return;
             } else {
+                if(isset($name)){
+                    $num++;
+                }
+                if(isset($phone)){
+                    $num++;
+                }
+                if(isset($profileUrl)){
+                    $num++;
+                }
 
+                if($num > 1){
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "name, profileUrl, phone 중 한 가지만 입력하세요.";
+                    echo json_encode($res);
+                    return;
+                }
 
-                if(isset($email)){
-                    // email Validation
-                    if (!preg_match("/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i", $email)) {
+                if(isset($name)){
+                    // name
+                    $nameLen = mb_strlen($name, 'utf-8');
+                    if ($nameLen < 2 or $nameLen > 20) {
                         $res->isSuccess = FALSE;
                         $res->code = 400;
-                        $res->message = "email 형식이 올바르지 않습니다.";
+                        $res->message = "회원가입 실패(사유: name은 2자 이상 20자 이하로 입력하세요.)";
                         echo json_encode($res);
-                        return;
-                    } else {
-                        if (isExistUser($email)) {
-                            $res->isSuccess = FALSE;
-                            $res->code = 400;
-                            $res->message = "이미 존재하는 email 입니다.";
-                            echo json_encode($res);
-                            return;
-                        }
+                        break;
                     }
-                    $postRes = patchUserEmail($email);
-                    $res->result = $postRes;
+
+
+
+                    $temp = patchUserName($userId, $name);
+                    if ($temp == 'false') {
+                        $res->isSuccess = FALSE;
+                        $res->code = 500;
+                        $res->message = "name 업데이트 실패";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
                     $res->isSuccess = TRUE;
                     $res->code = 200;
-                    $res->message = "email 업데이트 성공";
+                    $res->message = "name 업데이트 성공";
                     echo json_encode($res, JSON_NUMERIC_CHECK);
                     return;
                 }
 
 
-                // name
-                $nameLen = mb_strlen($name, 'utf-8');
-                if ($nameLen < 2 or $nameLen > 20) {
-                    $res->isSuccess = FALSE;
-                    $res->code = 400;
-                    $res->message = "회원가입 실패(사유: name은 2자 이상 20자 이하로 입력하세요.)";
-                    echo json_encode($res);
-                    break;
-                }
-            }
+                // phone Validation
+                if (isset($phone)) {
+                    if (!preg_match("/^\d{3}-\d{3,4}-\d{4}$/", $phone)) {
+                        $res->isSuccess = FALSE;
+                        $res->code = 400;
+                        $res->message = "phone 형식(010-0000-0000)이 올바르지 않습니다.";
+                        echo json_encode($res);
+                        break;
+                    }
 
-            // phone Validation
-            if (isset($phone)) {
-                if (!preg_match("/^\d{3}-\d{3,4}-\d{4}$/", $phone)) {
-                    $res->isSuccess = FALSE;
-                    $res->code = 400;
-                    $res->message = "phone 형식(010-0000-0000)이 올바르지 않습니다.";
-                    echo json_encode($res);
-                    break;
-                }
-            }
+                    $temp = patchUserPhone($userId, $phone);
 
-            // profileUrl Validation
-            if (isset($profileUrl)) {
-                if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $profileUrl)) {
-                    $res->isSuccess = FALSE;
-                    $res->code = 400;
-                    $res->message = "profileUrl의 Url 형식이 올바르지 않습니다.";
-                    echo json_encode($res);
-                    break;
-                }
-                if (!preg_match("/\.(gif|jpg|png)$/i", $profileUrl)) {
-                    $res->isSuccess = FALSE;
-                    $res->code = 400;
-                    $res->message = "profileUrl은 gif, jpg, png만 가능합니다.";
-                    echo json_encode($res);
-                    break;
-                }
-            }
+                    if ($temp == 'false') {
+                        $res->isSuccess = FALSE;
+                        $res->code = 500;
+                        $res->message = "phone 업데이트 실패";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                    $res->isSuccess = TRUE;
+                    $res->code = 200;
+                    $res->message = "phone 업데이트 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
 
+                }
+
+                // profileUrl Validation
+                if (isset($profileUrl)) {
+                    if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $profileUrl)) {
+                        $res->isSuccess = FALSE;
+                        $res->code = 400;
+                        $res->message = "profileUrl의 Url 형식이 올바르지 않습니다.";
+                        echo json_encode($res);
+                        break;
+                    }
+                    if (!preg_match("/\.(gif|jpg|png)$/i", $profileUrl)) {
+                        $res->isSuccess = FALSE;
+                        $res->code = 400;
+                        $res->message = "profileUrl은 gif, jpg, png만 가능합니다.";
+                        echo json_encode($res);
+                        break;
+                    }
+
+                   $temp = patchUserProfileUrl($userId, $profileUrl);
+
+                    if ($temp == 'false') {
+                        $res->isSuccess = FALSE;
+                        $res->code = 500;
+                        $res->message = "profileUrl 업데이트 실패";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+                    $res->isSuccess = TRUE;
+                    $res->code = 200;
+                    $res->message = "profileUrl 업데이트 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+
+            }
 
             break;
-            /*$postRes = postUser($email, $name, $profileUrl, $phone);
-            $res->result = $postRes;
-            $res->isSuccess = TRUE;
-            $res->code = 200;
-            $res->message = "회원가입 성공";
-            echo json_encode($res, JSON_NUMERIC_CHECK);
-            break;*/
+
         /*
         * API No. 2-1
         * API Name : 첫 이벤트 조회

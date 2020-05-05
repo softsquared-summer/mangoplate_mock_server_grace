@@ -67,16 +67,72 @@ where id=?;";
     return $res[0];
 }
 
-function patchUserEmail($email){
+//function patchUserEmail($userId, $email){
+//    $pdo = pdoSqlConnect();
+//    try {
+//        $query = "UPDATE user
+//SET user.email = ?
+//WHERE id = ?;";
+//
+//        $st = $pdo->prepare($query);
+//        $st->execute([$email, $userId]);
+//    } catch (Exception $e) {
+//        return 'false';
+//    }
+//
+//    $st=null;
+//    $pdo = null;
+//}
+function patchUserName($userId, $name){
     $pdo = pdoSqlConnect();
-    $query = "";
 
-    $st = $pdo->prepare($query);
-    $st->execute([$email]);
+    try {
+        $query = "UPDATE user
+SET user.name = ?
+WHERE id = ?;";
+
+        $st = $pdo->prepare($query);
+        $st->execute([$name, $userId]);
+    } catch (Exception $e) {
+        return 'false';
+    }
+    $st = null;
+    $pdo = null;
+}
+function patchUserProfileUrl($userId, $profileUrl){
+    $pdo = pdoSqlConnect();
+    try{
+        $query = "UPDATE user
+SET user.profile_url = ?
+WHERE id = ?;";
+
+        $st = $pdo->prepare($query);
+        $st->execute([$profileUrl, $userId]);
+    }catch (Exception $e){
+        return 'false';
+    }
 
     $st=null;
     $pdo = null;
 }
+function patchUserPhone($userId, $phone){
+    $pdo = pdoSqlConnect();
+    try {
+        $query = "UPDATE user
+SET user.phone = ?
+WHERE id = ?;";
+
+        $st = $pdo->prepare($query);
+        $st->execute([$phone, $userId]);
+
+    }catch (Exception $e){
+        return 'false';
+    }
+
+    $st=null;
+    $pdo = null;
+}
+
 
 //function getUserId()
 //{
