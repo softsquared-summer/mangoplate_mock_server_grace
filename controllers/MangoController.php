@@ -273,6 +273,155 @@ try {
             break;
 
         /*
+        * API No. 1-5
+        * API Name : 내 정보 조회
+        * 마지막 수정 날짜 : 20.05.05
+        */
+
+        case "getMe":
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+            
+            $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
+            $userEmail = $data->email;
+
+            $userId = getUserId($userEmail);
+            
+            $res->result = getMe($userId);
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "내 정보 조회";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
+        /*
+        * API No. 1-6
+        * API Name : 내 정보 수정
+        * 마지막 수정 날짜 : 20.05.05
+        */
+
+        case "patchUser":
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+//            $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
+//            $userEmail = $data->email;
+//
+//            $userId = getUserId($userEmail);
+
+
+            $email = $req->email;
+            $name = $req->name;
+            $profileUrl = $req->profileUrl;
+            $phone = $req->phone;;
+
+            // 비었는지
+            if (!isset($email) or !isset($name) or !isset($profileUrl) or !isset($phone)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "업데이트할 요소가 없습니다.";
+                echo json_encode($res);
+                return;
+            } else {
+
+
+                if(isset($email)){
+                    // email Validation
+                    if (!preg_match("/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i", $email)) {
+                        $res->isSuccess = FALSE;
+                        $res->code = 400;
+                        $res->message = "email 형식이 올바르지 않습니다.";
+                        echo json_encode($res);
+                        return;
+                    } else {
+                        if (isExistUser($email)) {
+                            $res->isSuccess = FALSE;
+                            $res->code = 400;
+                            $res->message = "이미 존재하는 email 입니다.";
+                            echo json_encode($res);
+                            return;
+                        }
+                    }
+                    $postRes = patchUserEmail($email);
+                    $res->result = $postRes;
+                    $res->isSuccess = TRUE;
+                    $res->code = 200;
+                    $res->message = "email 업데이트 성공";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+
+
+                // name
+                $nameLen = mb_strlen($name, 'utf-8');
+                if ($nameLen < 2 or $nameLen > 20) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "회원가입 실패(사유: name은 2자 이상 20자 이하로 입력하세요.)";
+                    echo json_encode($res);
+                    break;
+                }
+            }
+
+            // phone Validation
+            if (isset($phone)) {
+                if (!preg_match("/^\d{3}-\d{3,4}-\d{4}$/", $phone)) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "phone 형식(010-0000-0000)이 올바르지 않습니다.";
+                    echo json_encode($res);
+                    break;
+                }
+            }
+
+            // profileUrl Validation
+            if (isset($profileUrl)) {
+                if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $profileUrl)) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "profileUrl의 Url 형식이 올바르지 않습니다.";
+                    echo json_encode($res);
+                    break;
+                }
+                if (!preg_match("/\.(gif|jpg|png)$/i", $profileUrl)) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "profileUrl은 gif, jpg, png만 가능합니다.";
+                    echo json_encode($res);
+                    break;
+                }
+            }
+
+
+            break;
+            /*$postRes = postUser($email, $name, $profileUrl, $phone);
+            $res->result = $postRes;
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "회원가입 성공";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;*/
+        /*
         * API No. 2-1
         * API Name : 첫 이벤트 조회
         * 마지막 수정 날짜 : 20.05.01

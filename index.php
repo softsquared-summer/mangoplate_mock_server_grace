@@ -31,9 +31,13 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 //    $r->addRoute('GET', '/articles/{id:\d+}[/{title}]', 'get_article_handler');
 
     /* ******************   Mango   ****************** */
-    // 1. 로그인
+    // 1. 유저
     $r->addRoute('POST', '/user', ['MangoController', 'postUser']);
     $r->addRoute('POST', '/jwt', ['MangoController', 'createJwt']);
+
+    $r->addRoute('GET', '/user', ['MangoController', 'getMe']);
+    $r->addRoute('PATCH', '/user', ['MangoController', 'patchUser']);
+
 
     // 2. 이벤트
     $r->addRoute('GET', '/event', ['MangoController', 'getEvent']);

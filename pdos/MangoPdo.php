@@ -47,6 +47,37 @@ function postUser($email, $pw1, $name, $profileUrl, $phone)
     
 }
 
+function getMe($userId){
+    $pdo = pdoSqlConnect();
+    $query = "select profile_url profileUrl,
+       name,
+       email,
+       phone
+from user
+where id=?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;
+    $pdo = null;
+
+    return $res[0];
+}
+
+function patchUserEmail($email){
+    $pdo = pdoSqlConnect();
+    $query = "";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$email]);
+
+    $st=null;
+    $pdo = null;
+}
+
 //function getUserId()
 //{
 //    $pdo = pdoSqlConnect();
