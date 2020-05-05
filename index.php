@@ -47,6 +47,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
 
     // 4. 식당
     $r->addRoute('GET', '/restaurants', ['RestaurantController', 'getRestaurants']);
+    $r->addRoute('GET', '/restaurants/{restaurantId}', ['RestaurantController', 'getRestaurant']);
 
     // 5. 검색어
     $r->addRoute('GET', '/keywords', ['MangoController', 'getKeywords']);

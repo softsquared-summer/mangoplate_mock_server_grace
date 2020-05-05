@@ -389,7 +389,6 @@ order by rating desc;";
     return $res;
 }
 
-
 function getRestaurants($lat, $lng, $userId, $area, $kind, $price, $radius, $order, $category, $parking)
 {
     $pdo = pdoSqlConnect();
@@ -483,6 +482,130 @@ limit ;";*/
     return $res;
 }
 
+
+function isExistRestaurant($restaurantId){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM restaurant r WHERE r.id= ?) AS exist;";
+
+
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;
+    $pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+
+function getRestaurant($userId, $restaurantId){
+    $pdo = pdoSqlConnect();
+    $query = "select name,
+       SEEN.seenNum,
+       REVIEW.reviewNum,
+       IF(STAR.starNum is null, 0, STAR.starNum)         startNum,
+       RATING.rating,
+       CASE
+           WHEN (REVIEW.reviewNum = 0) THEN null
+           WHEN (REVIEW.reviewNum <= 3) THEN 'gray'
+           WHEN (REVIEW.reviewNum > 3) THEN 'orange' END ratingColor,
+       IF(FUTURE.star is null, 'NO', star)               userStar,
+       address,
+       oldAddress,
+       phone,
+       USER.userName,
+       USER.profile_url userProfileUrl,
+       INFO.infoUpdate, infoTime, infoHoliday, infoDescription, infoPrice, infoKind, infoParking, infoSite
+from restaurant
+         LEFT JOIN (select restaurant_id,
+                           FORMAT(num, 0) seenNum
+                    from seen) SEEN ON SEEN.restaurant_id = id
+         LEFT JOIN (select restaurant_id, FORMAT(COUNT(*), 0) reviewNum
+                    from review
+                    group by restaurant_id) REVIEW ON REVIEW.restaurant_id = id
+         LEFT JOIN (select restaurant_id, COUNT(*) starNum
+                    from future
+                    group by restaurant_id) STAR ON STAR.restaurant_id = id
+         LEFT JOIN (select *
+                    from rating) RATING ON RATING.restaurant_id = id
+         LEFT JOIN (select restaurant_id,
+                           IF(state = 'Y', 'YES', 'NO') star
+                    from future
+                    where user_id = ?) FUTURE ON FUTURE.restaurant_id = id
+         LEFT JOIN (select id, name userName, profile_url
+                    from user) USER ON USER.id = restaurant.user_id
+LEFT JOIN (select restaurant_id rId,
+                  CONCAT('마지막 업데이트: ', date_format(updated_at, '%Y-%m-%d')) infoUpdate,
+       time                                                      infoTime,
+       holiday                                                   infoHoliday,
+       info infoDescription,
+       CASE
+           WHEN (price = '0') THEN '만원 이하'
+           WHEN (price = '1') THEN '만원 - 2만원'
+           WHEN (price = '2') THEN '2만원 - 3만원'
+           WHEN (price = '3') THEN '3만원 이상' END                  infoPrice,
+       kind                                                      infoKind,
+       CASE
+           WHEN (parking = '유료') THEN '유료주차 가능'
+           WHEN (parking = '무료') THEN '무료주차 가능'
+           WHEN (parking is null) THEN '주차공간없음' END              infoParking,
+       site infoSite
+from information) INFO ON INFO.rId = restaurant.id
+where restaurant.id = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userId, $restaurantId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0];
+}
+
+function getRestaurantImages($restaurantId){
+    $pdo = pdoSqlConnect();
+    $query = "select id imageId,
+       image_url imageUrl
+from restaurant_image
+         RIGHT JOIN (select id reviewId, created_at
+                     from review
+                     where restaurant_id = ?) REVIEW ON REVIEW.reviewId = review_id
+where image_url is not null
+order by created_at desc
+limit 5;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+function getRestaurantKeywords($restaurantId){
+    $pdo = pdoSqlConnect();
+    $query = "select keyword
+from keyword
+where restaurant_id = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
 // 5. 검색어
 function getKeywords()
 {
@@ -507,7 +630,7 @@ group by keyword;";
     return $res;
 }
 
-// 5. 검색어
+// 13. EAT 딜
 function getEatdeals($area)
 {
     $pdo = pdoSqlConnect();
@@ -562,6 +685,7 @@ from eatdeal
 
     return $res;
 }
+
 function isExistEatdeal($eatdealId){
     $pdo = pdoSqlConnect();
     $query = "SELECT EXISTS(SELECT * FROM eatdeal e WHERE e.id= ?) AS exist;";
@@ -609,6 +733,7 @@ where eatdeal.id = ?;";
 
     return $res[0];
 }
+
 function getEatdealImg($eatdealId)
 {
     $pdo = pdoSqlConnect();
@@ -625,8 +750,10 @@ where eatdeal_id = ?;";
     $pdo = null;
 
     // print_r($res);
+
     return $res;
 }
+
 function getEatdealDetail($eatdealId)
 {
     $pdo = pdoSqlConnect();
