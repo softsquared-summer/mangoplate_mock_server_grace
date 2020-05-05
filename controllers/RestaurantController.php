@@ -625,11 +625,26 @@ $areaIdArray = getAreaId($areaArray);
 
             $real = array_merge($temp, $temp2, $temp3);
 
+
+            foreach ($real['images'] as $key => $value){
+                settype($real['images'][$key]['imageId'], "integer");
+            }
+/*            foreach ($real as $key => $value){
+                // settype($real[$key]['images'], "integer");
+
+                foreach ($real[$key]['images'] as $key2 => $value2){
+
+                    settype($real[$key]['images'][$key2]['imageId'], "integer");
+                }
+
+            }*/
+
+
             $res->result = $real;
             $res->isSuccess = TRUE;
             $res->code = 200;
             $res->message = "식당 상세 조회";
-            echo json_encode($res, JSON_NUMERIC_CHECK);
+            echo json_encode($res);
             break;
 
 
