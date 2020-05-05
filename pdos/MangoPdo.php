@@ -903,6 +903,31 @@ QR코드 스캔이 불가능할 시 매장 직원에게 화면 하단 12자리 �
 }
 
 
+// 6. 사진
+function getImages($restaurantsId)
+{
+    $pdo = pdoSqlConnect();
+    $query = "select id imageId,
+       image_url imageUrl
+from restaurant_image
+         RIGHT JOIN (select id reviewId, created_at
+                     from review
+                     where restaurant_id = ?) REVIEW ON REVIEW.reviewId = review_id
+where image_url is not null
+order by created_at desc;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantsId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+
 //
 ////READ
 //function testDetail($testNo)
