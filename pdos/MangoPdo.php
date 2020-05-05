@@ -476,7 +476,7 @@ order by rating desc;";
     return $res;
 }
 
-function getRestaurants($lat, $lng, $userId, $area, $kind, $price, $radius, $order, $category, $parking)
+function getRestaurants($lat, $lng, $userId, $area, $kind, $price, $radius, $order, $category, $parking, $keyword)
 {
     $pdo = pdoSqlConnect();
     $query = "SELECT area_id                                           areaId,
@@ -523,14 +523,57 @@ FROM restaurant
          LEFT JOIN (select restaurant_id, price, parking, kind from information) INFO ON INFO.restaurant_id = id";
 
 
+
+    $search = " JOIN ((select restaurant_id RES_ID
+                from menu
+                WHERE name  LIKE '%" . $keyword . "%')
+               UNION
+               (select id RES_ID
+                from restaurant
+                where address  LIKE '%" . $keyword . "%'
+                   or oldAddress  LIKE '%" . $keyword . "%'
+                   or name  LIKE '%" . $keyword . "%')
+               UNION
+               (select restaurant_id RES_ID
+                from keyword
+                where keyword  LIKE '%" . $keyword . "%'
+               )) KEYWORD ON KEYWORD.RES_ID = id";
+
+
+    if (isset($keyword)) {
+        $query = $query . $search;
+    }
+
+
 /*    where area_id = ?
   and DIST.dist < 3
 order by rating desc
 limit ;";*/
 
 
-    $filter = " where " . $area ;
+    $filter = " where ";
+
+    if(isset($area)){
+        $filter = $filter . $area . " and ";
+    }
     if (isset($kind)) {
+        $filter = $filter . $kind . " and ";
+    }
+    if (isset($price)) {
+        $filter = $filter . $price . " and ";
+    }
+    if (isset($radius)) {
+        $filter = $filter . $radius . " and ";
+    }
+    if (isset($category)) {
+        $filter = $filter . $category . " and ";
+    }
+    if (isset($parking)) {
+        $filter = $filter . $parking . " and ";
+    }
+
+    $filter = substr($filter, 0, -4);
+   /* if (isset($kind)) {
         $filter = $filter . " and " . $kind;
     }
     if (isset($price)) {
@@ -544,12 +587,13 @@ limit ;";*/
     }
     if (isset($parking)) {
         $filter = $filter . " and " . $parking;
-    }
+    }*/
+
     $filter = $filter . " " . $order . ";";
 
     $query = $query . $filter;
 
-    // echo $query;
+     echo $query;
 
     $st = $pdo->prepare($query);
     $st->execute([$userId]);
@@ -719,6 +763,43 @@ where restaurant_id = ?;";
     return $res;
 }
 
+function getRestaurantMenu($restaurantId){
+    $pdo = pdoSqlConnect();
+    $query = "select name, FORMAT(price, 0) price
+from menu
+where restaurant_id = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    // print_r($res);
+    return $res;
+}
+
+function getMenuUpdate($restaurantId){
+    $pdo = pdoSqlConnect();
+    $query = "select CONCAT('마지막 업데이트: ',date_format(updated_at, '%Y-%m-%d')) menuUpdate
+from menu
+where restaurant_id = ?
+order by updated_at desc
+limit 1;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    // print_r($res);
+    return $res[0];
+}
 // 5. 검색어
 function getKeywords()
 {

@@ -70,6 +70,9 @@ try {
                 return;
             }
 
+            
+
+
 
             //main인지 map인지만 따져서 함수 2개 각각.
 
@@ -112,14 +115,30 @@ try {
                 }
             }
 
+
+
+            // 키워드
+            $keyword = $_GET['keyword'];
+
+
+
+
             if(!isset($area)){
-                $result = getNear($lat, $lng);
 
-                $nearestAreaId = $result[0]['areaId'];
-                $nearestAreaName = $result[0]['name'];
-                $area = 'AREA.a_name in (\'' . $nearestAreaName . '\')';
+                if(!isset($keyword)){
+                    // 여기는 area 설정 안되어 있을 경우에, 자신과 가장 가까운 지역을 넣는건데,
+                    // 만약, keyword가 포함되어 있으면 area에 아무것도 넣지마
 
-                $isNear = true;
+                    $result = getNear($lat, $lng);
+
+
+                    $nearestAreaId = $result[0]['areaId'];
+                    $nearestAreaName = $result[0]['name'];
+                    $area = 'AREA.a_name in (\'' . $nearestAreaName . '\')';
+
+                    $isNear = true;
+                }
+
             }else{
 
                 $realArea = "(";
@@ -329,7 +348,7 @@ try {
 
             if($type == 'main'){
 
-                $restaurants = getRestaurants($lat, $lng, $userId, $area, $kind, $price, $radius, $order, $category, $parking);
+                $restaurants = getRestaurants($lat, $lng, $userId, $area, $kind, $price, $radius, $order, $category, $parking, $keyword);
 
                 if(empty($restaurants)){
                     $res->isSuccess = FALSE;
@@ -358,228 +377,6 @@ try {
             }else{
 
             }
-
-
-
-          /*  // Main
-            if($type == 'main'){
-
-                // $area 설정 안한 경우 - 내 근처 지역 보이기
-                if(!isset($area)){
-                    // 3-1 getNear 활용 - 제일 가까운 1개만 가져오기
-                    $result = getNear($lat, $lng);
-
-                    $nearestAreaId = $result[0]['areaId'];
-                    $nearestAreaName = $result[0]['name'];
-                    // echo $nearestAreaId;
-                    // $nearestAreaId = 8;
-                    // print_r($nearestArea);
-
-                    if(!isset($nearestAreaId)){
-                        $res->isSuccess = FALSE;
-                        $res->code = 400;
-                        $res->message = "10km 이내의 지역이 없습니다.";
-                        echo json_encode($res, JSON_NUMERIC_CHECK);
-                        break;
-                    }
-
-                    $nearRestaurants = getNearRestaurants($lat, $lng, $userId, $nearestAreaId);
-
-                    if(empty($nearRestaurants)){
-                        $res->isSuccess = FALSE;
-                        $res->code = 400;
-                        $res->message = $nearestAreaName."에 등록된 식당이 없습니다.";
-                        echo json_encode($res, JSON_NUMERIC_CHECK);
-                        break;
-                    }
-
-                    foreach ($nearRestaurants as $key => $value){
-                        settype($nearRestaurants[$key]['areaId'], "integer");
-                        settype($nearRestaurants[$key]['restaurantId'], "integer");
-                    }
-
-                    $res->result = $nearRestaurants;
-                    $res->isSuccess = TRUE;
-                    $res->code = 200;
-                    $res->message = $nearestAreaName."의 식당 목록 조회 - 내근처 지역";
-
-                    // 콤마 때문에 numeric_check 지우고 int값 필요한 것들은 변환해줬음.
-                    echo json_encode($res);
-                    break;
-
-                }else { // $area 설정 한 경우 - 1개 인지 2개 이상인지 따지기
-                    $area = str_replace(" ", "", $area);
-                    $areaArray = explode(',', $area);
-                    $areaCount = count($areaArray);
-                    if ($areaCount == 1) {
-
-
-
-
-                    } elseif ($areaCount > 1) {
-
-                    } else {
-
-                    }
-
-                }
-                $areaIdArray = getAreaId($areaArray);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            }
-            elseif($type == 'map'){
-
-
-
-
-            }*/
-/*//            // 3-1 getNear 활용 - 제일 가까운 1개만 가져오기
-//            $result = getNear($lat, $lng);
-//
-//            $nearestArea = $result[0];
-//            // print_r($nearestArea);
-//
-//            if($nearestArea == null){
-//                $res->isSuccess = FALSE;
-//                $res->code = 400;
-//                $res->message = "10km 이내의 지역이 없습니다.";
-//                echo json_encode($res, JSON_NUMERIC_CHECK);
-//                break;
-//            }
-
-
-            // 자신과 제일 가까운 위치가 아니면 km 설정할 수 없게 막아야 함
-
-
-
-//            if(!isset($area)){
-//                $res->isSuccess = FALSE;
-//                $res->code = 400;
-//                $res->message = "Query Params를 확인하세요. (area = 1개 이상의 (지역명)을 입력하세요.)";
-//                echo json_encode($res, JSON_NUMERIC_CHECK);
-//                break;
-//            }
-
-//            if(isset($area)){
-//                $area = str_replace(" ", "", $area);
-//                $areaArray = explode(',', $area);
-//                // $areaCount = count($areaArray);
-//            }
-//            $areaIdArray = getAreaId($areaArray);
-//
-////            $area = str_replace(" ", "", $area);
-////            $areaArray = explode(',', $area);
-////            // $areaCount = count($areaArray);
-////            $areaIdArray = getAreaId($areaArray);
-////            // $areaIdArray = [1, 30, 29];
-////            // where r.area_id = 1 or r.area_id = 30 or r.area_id = 29;
-//
-//            if ($areaIdArray == null) {
-//                $res->isSuccess = FALSE;
-//                $res->code = 400;
-//                $res->message = "Query Params를 확인하세요. (area = 올바르지 않은 (지역명)이 있습니다.)";
-//                echo json_encode($res, JSON_NUMERIC_CHECK);
-//                break;
-//            }
-
-$areaIdArray = getAreaId($areaArray);
-            if ($areaIdArray == null) {
-                $res->isSuccess = FALSE;
-                $res->code = 400;
-                $res->message = "Query Params를 확인하세요. (area = 올바르지 않은 (지역명)이 있습니다.)";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                break;
-            }
-            //--------------------------------------
-
-            // 지역 1개 입력했다고 하고 해보자
-
-
-
-//            print_r($areaIdArray);
-
-
-
-//            if(!($type == 'main') and !($type == 'map')){
-//                $res->isSuccess = FALSE;
-//                $res->code = 400;
-//                $res->message = "Query Params를 확인하세요. (type = main, map)";
-//                echo json_encode($res, JSON_NUMERIC_CHECK);
-//                break;
-//            }
-//
-//            if($type == 'main'){
-//
-//            }else
-
-//            $temp = Array();
-//
-//            $temp[0]->restaurantId = 1;
-//            $temp[0]->img = "https://i.imgur.com/p98abur.jpg";
-//            $temp[0]->star = "YES";
-//            $temp[0]->title = "1. 여산족발";
-//            $temp[0]-> area= "금천구";
-//            $temp[0]->distance = "21.91km";
-//            $temp[0]->seenNum = "37,270";
-//            $temp[0]->reviewNum= "29";
-//            $temp[0]->rating= "4.2";
-//            $temp[0]->ratingColor= "orange";
-//
-//            $temp[1]->restaurantId = 2;
-//            $temp[1]->img = "https://i.imgur.com/Kh0d5zW.jpg";
-//            $temp[1]->star = "NO";
-//            $temp[1]->title = "2. 카페스미다";
-//            $temp[1]-> area= "금천구";
-//            $temp[1]->distance = "22.00km";
-//            $temp[1]->seenNum = "5,368";
-//            $temp[1]->reviewNum= "8";
-//            $temp[1]->rating= "4.1";
-//            $temp[1]->ratingColor= "gray";
-//
-//
-//            if ( $type == 'main' and $area == '금천구'){
-//                $res->result = $temp;
-//                $res->isSuccess = TRUE;
-//                $res->code = 200;
-//                $res->message = "식당 목록 조회 (추천순)";
-//            }else {
-//                $res->isSuccess = FALSE;
-//                $res->code = 400;
-//                $res->message = "개발 진행 중";
-//            }
-
-//            $distirctsId = $vars["districtsId"];
-//
-//            if (!isValidDistrict($distirctsId)) {
-//                $res->isSuccess = FALSE;
-//                $res->code = 400;
-//                $res->message = "해당 지역구가 없습니다.";
-//            } else {
-//                $res->result = getAreas($distirctsId);
-//                $res->isSuccess = TRUE;
-//                $res->code = 200;
-//                $res->message = "지역 목록 조회";
-//            }*/
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 
@@ -618,10 +415,15 @@ $areaIdArray = getAreaId($areaArray);
             $temp = Array();
             $temp2 = Array();
             $temp3 = Array();
+            $temp4 = Array();
+            $temp5 = Array();
 
             $temp['images'] = getRestaurantImages($restaurantId);
             $temp2 = getRestaurant($userId, $restaurantId);
             $temp3['keywords'] = getRestaurantKeywords($restaurantId);
+            $temp4['menu'] = getRestaurantMenu($restaurantId);
+            $temp5= getMenuUpdate($restaurantId);
+
 
 
             if($temp2 == null){
@@ -631,7 +433,7 @@ $areaIdArray = getAreaId($areaArray);
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
-            $real = array_merge($temp, $temp2, $temp3);
+            $real = array_merge($temp, $temp2, $temp3, $temp4, $temp5);
 
 
             foreach ($real['images'] as $key => $value){
