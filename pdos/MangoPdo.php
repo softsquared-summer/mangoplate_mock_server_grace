@@ -442,7 +442,7 @@ FROM restaurant
                     from (select rv.restaurant_id, REIMG.image_url, rv.created_at
                           from review rv
                                    LEFT JOIN (select *
-                                              from review_image
+                                              from restaurant_image
                                               group by review_id) REIMG ON REIMG.review_id = rv.id
                           where image_url is not null
                           order by restaurant_id, created_at asc
@@ -496,7 +496,7 @@ function getRestaurants($lat, $lng, $userId, $area, $kind, $price, $radius, $ord
 FROM restaurant
          LEFT JOIN (select *
                     from rating) RATING ON RATING.restaurant_id = id
-         LEFT JOIN (select restaurant_id, num seenNum
+         LEFT JOIN (select restaurant_id, FORMAT(num, 0) seenNum
                     from seen) SEEN ON SEEN.restaurant_id = id
          LEFT JOIN (select restaurant_id,
                            IF(state = 'Y', 'YES', 'NO') star
@@ -509,7 +509,7 @@ FROM restaurant
                     from (select rv.restaurant_id, REIMG.image_url, rv.created_at
                           from review rv
                                    LEFT JOIN (select *
-                                              from review_image
+                                              from restaurant_image
                                               group by review_id) REIMG ON REIMG.review_id = rv.id
                           where image_url is not null
                           order by restaurant_id, created_at asc
