@@ -623,6 +623,14 @@ $areaIdArray = getAreaId($areaArray);
             $temp2 = getRestaurant($userId, $restaurantId);
             $temp3['keywords'] = getRestaurantKeywords($restaurantId);
 
+
+            if($temp2 == null){
+                $res->isSuccess = FALSE;
+                $res->code = 500;
+                $res->message = "UPDATE | SELECT 트랜젝션에 실패하였습니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
             $real = array_merge($temp, $temp2, $temp3);
 
 

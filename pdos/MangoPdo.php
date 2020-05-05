@@ -502,10 +502,24 @@ function isExistRestaurant($restaurantId){
 
 function getRestaurant($userId, $restaurantId){
     $pdo = pdoSqlConnect();
-    $query = "select name,
+
+    try {
+
+        $pdo->beginTransaction();
+
+
+        $updateQuery = "UPDATE seen
+SET num = num + 1
+WHERE restaurant_id = ?;";
+
+        $st = $pdo->prepare($updateQuery);
+        $st->execute([$restaurantId]);
+
+
+        $query = "select name,
        SEEN.seenNum,
        REVIEW.reviewNum,
-       IF(STAR.starNum is null, 0, STAR.starNum)         startNum,
+       IF(STAR.starNum is null, 0, STAR.starNum)         starNum,
        RATING.rating,
        CASE
            WHEN (REVIEW.reviewNum = 0) THEN null
@@ -555,14 +569,26 @@ LEFT JOIN (select restaurant_id rId,
 from information) INFO ON INFO.rId = restaurant.id
 where restaurant.id = ?;";
 
-    $st = $pdo->prepare($query);
-    $st->execute([$userId, $restaurantId]);
-    $st->setFetchMode(PDO::FETCH_ASSOC);
-    $res = $st->fetchAll();
+        $st = $pdo->prepare($query);
+        $st->execute([$userId, $restaurantId]);
+        $st->setFetchMode(PDO::FETCH_ASSOC);
+        $res = $st->fetchAll();
+
+
+        $pdo->commit();
+
+    } catch (\Exception $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollback();
+            return null;
+        }
+        throw $e;
+    }
+
 
     $st = null;
     $pdo = null;
-
+    
     return $res[0];
 }
 
@@ -591,7 +617,7 @@ limit 5;";
 
 function getRestaurantKeywords($restaurantId){
     $pdo = pdoSqlConnect();
-    $query = "select keyword
+    $query = "select CONCAT('#', keyword) keyword
 from keyword
 where restaurant_id = ?;";
 
