@@ -916,14 +916,7 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
-
-
-            $res->result = postFuture($restaurantId);
-            $res->isSuccess = TRUE;
-            $res->code = 200;
-            $res->message = "식당 가고싶다 추가/삭제";
-            echo json_encode($res, JSON_NUMERIC_CHECK);
-            break;
+            
 
 
         /*

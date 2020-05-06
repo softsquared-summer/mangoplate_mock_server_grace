@@ -122,3 +122,51 @@ from user
     return $res;
 }
 
+function isFriend($myId, $otherId){
+
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM friend f WHERE f.user_id =? and f.friend_id=?) AS exist;";
+
+
+    $st = $pdo->prepare($query);
+
+    $st->execute([$myId, $otherId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return intval($res[0]["exist"]);
+
+}
+function postFriend($myId, $otherId){
+
+    $pdo = pdoSqlConnect();
+    $insertQuery = "INSERT INTO friend (user_id, friend_id) VALUES (?, ?);";
+    $deleteQuery = "DELETE
+FROM friend
+WHERE user_id = ?
+  and friend_id = ?;";
+
+    $query = "";
+
+    if(!isFriend($myId, $otherId)){
+        $query = $insertQuery;
+        $status = '친구 추가';
+    }else{
+        $query = $deleteQuery;
+        $status = '친구 삭제';
+    }
+
+
+//    echo $query;
+    $st = $pdo->prepare($query);
+    $st->execute([$myId, $otherId]);
+
+    $st = null;
+    $pdo = null;
+
+    return $status;
+}
+

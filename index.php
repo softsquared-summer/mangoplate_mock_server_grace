@@ -71,6 +71,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     // 12. 친구
     $r->addRoute('GET', '/users/{userId}/follower', ['FriendController', 'getfollower']);
     $r->addRoute('GET', '/users/{userId}/following', ['FriendController', 'getfollowing']);
+    $r->addRoute('POST', '/friends/{userId}', ['FriendController', 'postFriend']);
 
 
 });

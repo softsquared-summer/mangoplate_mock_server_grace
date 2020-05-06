@@ -115,6 +115,43 @@ try {
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 
+
+
+        /*
+        * API No. 12-4
+        * API Name : 특정 user 팔로잉 추가 or 해제
+        * 마지막 수정 날짜 : 20.05.06
+        */
+        case "postFriend":
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+            $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
+            $userEmail = $data->email;
+            $myId = getUserId($userEmail);
+
+            $otherId = $vars['userId'];
+
+            $status = postFriend($myId, $otherId);
+
+
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message =  $status;
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            return;
+
+
+
     }
 } catch (\Exception $e) {
     return getSQLErrorException($errorLogs, $e, $req);
