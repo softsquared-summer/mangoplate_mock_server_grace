@@ -64,10 +64,10 @@ try {
 
 
         /*
-* API No. 12-1
-* API Name : 특정 user 팔로워 목록
-* 마지막 수정 날짜 : 20.05.06
-*/
+        * API No. 12-2
+        * API Name : 특정 user 팔로잉 목록
+        * 마지막 수정 날짜 : 20.05.06
+        */
         case "getfollowing":
             http_response_code(200);
 

@@ -146,7 +146,13 @@ try {
                 }
 
                 $jwt = getJWToken($email, $pw, JWT_SECRET_KEY);
+
+                $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
+                $userEmail = $data->email;
+                $userId = getUserId($userEmail);
+
                 $res->result->jwt = $jwt;
+                $res->result->userId = $userId;
                 $res->isSuccess = TRUE;
                 $res->code = 200;
                 $res->message = "로그인 성공";
@@ -197,7 +203,13 @@ try {
 
                     postUser($email, '', $id, $profileUrl, '');
                     $jwt = getJWToken($email, '', JWT_SECRET_KEY);
+
+                    $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
+                    $userEmail = $data->email;
+                    $userId = getUserId($userEmail);
+
                     $res->result->jwt = $jwt;
+                    $res->result->userId = $userId;
                     $res->isSuccess = TRUE;
                     $res->code = 200;
                     $res->message = "회원가입 및 로그인 성공";
@@ -206,7 +218,13 @@ try {
 
                 } else {
                     $jwt = getJWToken($email, '', JWT_SECRET_KEY);
+
+                    $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
+                    $userEmail = $data->email;
+                    $userId = getUserId($userEmail);
+
                     $res->result->jwt = $jwt;
+                    $res->result->userId = $userId;
                     $res->isSuccess = TRUE;
                     $res->code = 200;
                     $res->message = "로그인 성공";
@@ -245,7 +263,13 @@ try {
 
                     postUser($email, '', $name, '', '');
                     $jwt = getJWToken($email, '', JWT_SECRET_KEY);
+
+                    $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
+                    $userEmail = $data->email;
+                    $userId = getUserId($userEmail);
+
                     $res->result->jwt = $jwt;
+                    $res->result->userId = $userId;
                     $res->isSuccess = TRUE;
                     $res->code = 200;
                     $res->message = "회원가입 및 로그인 성공";
@@ -255,6 +279,7 @@ try {
                 } else {
                     $jwt = getJWToken($email, '', JWT_SECRET_KEY);
                     $res->result->jwt = $jwt;
+                    $res->result->userId = $userId;
                     $res->isSuccess = TRUE;
                     $res->code = 200;
                     $res->message = "로그인 성공";
