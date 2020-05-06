@@ -474,7 +474,7 @@ order by rating desc;";
     return $res;
 }
 
-function getRestaurants($lat, $lng, $userId, $area, $kind, $price, $radius, $order, $category, $parking, $keyword)
+function getRestaurants($lat, $lng, $userId, $area, $kind, $price, $radius, $order, $category, $parking, $keyword, $paging, $page, $size)
 {
     $pdo = pdoSqlConnect();
     $query = "SELECT area_id                                           areaId,
@@ -587,11 +587,11 @@ limit ;";*/
         $filter = $filter . " and " . $parking;
     }*/
 
-    $filter = $filter . " " . $order . ";";
+    $filter = $filter . " " . $order ;
 
-    $query = $query . $filter;
+    $query = $query . $filter . $paging. ";";
 
-     // echo $query;
+//      echo $query;
 
     $st = $pdo->prepare($query);
     $st->execute([$userId]);
@@ -601,7 +601,7 @@ limit ;";*/
     // title 앞에 번호 붙이기
     foreach ($res as $key => $value) {
 
-        $res[$key]['title'] = ($key + 1) . ". " . $res[$key]['title'];
+        $res[$key]['title'] = ($key + 1) + $size*($page-1) . ". " . $res[$key]['title'];
 
     }
 

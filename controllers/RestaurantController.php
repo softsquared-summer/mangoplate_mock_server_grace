@@ -171,6 +171,7 @@ try {
             $kind = $_GET['kind'];
             if(!isset($kind)){
 
+
             }else{
 
                 $realKind = "(";
@@ -342,13 +343,35 @@ try {
 
             // paging 처리하는 것 받기
             $page = $_GET['page'];
-            $parking = $_GET['per'];
+            $size = $_GET['size'];
 
+            $paging = '';
+
+            if(empty($page)){
+                $page = 1;
+            }else{
+                if(empty($size)){
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "page의 size를 입력하세요.";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    return;
+                }
+            }
+
+            if(!empty($size)){
+//                $size = 6;
+                $paging = ' limit ' . ($page - 1) * $size . ',' . $size;
+            }
+
+
+
+//            echo $paging;
 
 
             if($type == 'main'){
 
-                $restaurants = getRestaurants($lat, $lng, $userId, $area, $kind, $price, $radius, $order, $category, $parking, $keyword);
+                $restaurants = getRestaurants($lat, $lng, $userId, $area, $kind, $price, $radius, $order, $category, $parking, $keyword, $paging, $page, $size);
 
                 if(empty($restaurants)){
                     $res->isSuccess = FALSE;
