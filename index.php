@@ -64,7 +64,8 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/restaurants/{restaurantId}/images', ['MangoController', 'getImages']);
 
     // 11. 가고싶다
-     $r->addRoute('POST', '/restaurants/{restaurantId}/future', ['MangoController', 'postFuture']);
+    $r->addRoute('POST', '/restaurants/{restaurantId}/future', ['MangoController', 'postFuture']);
+    $r->addRoute('GET', '/users/{userId}/future', ['MangoController', 'getFutures']);
 
 });
 

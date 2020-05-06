@@ -66,7 +66,6 @@ where id=?;";
 
     return $res[0];
 }
-
 //function patchUserEmail($userId, $email){
 //    $pdo = pdoSqlConnect();
 //    try {
@@ -99,6 +98,7 @@ WHERE id = ?;";
     $st = null;
     $pdo = null;
 }
+
 function patchUserProfileUrl($userId, $profileUrl){
     $pdo = pdoSqlConnect();
     try{
@@ -115,6 +115,7 @@ WHERE id = ?;";
     $st=null;
     $pdo = null;
 }
+
 function patchUserPhone($userId, $phone){
     $pdo = pdoSqlConnect();
     try {
@@ -132,8 +133,6 @@ WHERE id = ?;";
     $st=null;
     $pdo = null;
 }
-
-
 //function getUserId()
 //{
 //    $pdo = pdoSqlConnect();
@@ -149,7 +148,6 @@ WHERE id = ?;";
 //
 //    return $res;
 //}
-
 function isValidUser($email, $pw)
 {
     $pdo = pdoSqlConnect();
@@ -658,6 +656,7 @@ WHERE restaurant_id = ?;";
        address,
        oldAddress,
        phone,
+       USER.id userId,
        USER.userName,
        USER.profile_url userProfileUrl,
        INFO.infoUpdate, infoTime, infoHoliday, infoDescription, infoPrice, infoKind, infoParking, infoSite
@@ -1069,6 +1068,146 @@ where user_id =? and restaurant_id = ?";
     return $res[0];
 
 }
+
+function getFutures($lat, $lng, $myId, $otherId, $area, $kind, $price, $order, $parking)
+{
+    $pdo = pdoSqlConnect();
+    $query = "SELECT area_id                                           areaId,
+       AREA.a_name                                       area,
+       id                                                restaurantId,
+       image_url                                         img,
+       IF(FUTURE.star is null, 'NO', star)               star,
+       name                                              title,
+       IF(SEEN.seenNum is null,
+          0, seenNum)                                    seenNum,
+       REVIEW.reviewNum,
+       RATING.rating,
+       CASE
+           WHEN (REVIEW.reviewNum = 0) THEN null
+           WHEN (REVIEW.reviewNum <= 3) THEN 'gray'
+           WHEN (REVIEW.reviewNum > 3) THEN 'orange' END ratingColor
+FROM restaurant
+         LEFT JOIN (select *
+                    from rating) RATING ON RATING.restaurant_id = id
+         LEFT JOIN (select restaurant_id,
+                           FORMAT(num,
+                                  0) seenNum
+                    from seen) SEEN ON SEEN.restaurant_id = id
+         LEFT JOIN (select restaurant_id,
+                           IF(state = 'Y', 'YES', 'NO') star,
+                           created_at                   myCreatedAt
+                    from future
+                    where user_id = ?) FUTURE ON FUTURE.restaurant_id = id
+         LEFT JOIN (select restaurant_id, COUNT(*) reviewNum
+                    from review
+                    group by restaurant_id) REVIEW ON REVIEW.restaurant_id = id
+         LEFT JOIN (select *
+                    from (select rv.restaurant_id, REIMG.image_url, rv.created_at
+                          from review rv
+                                   LEFT JOIN (select *
+                                              from restaurant_image
+                                              group by review_id) REIMG ON REIMG.review_id = rv.id
+                          where image_url is not null
+                          order by restaurant_id, created_at asc
+                          LIMIT 18446744073709551615) as a
+                    group by a.restaurant_id) IMG ON IMG.restaurant_id = id
+         JOIN(select a.id a_id, a.name a_name from area a) AREA ON AREA.a_id = restaurant.area_id
+         JOIN (select restaurant.id rId,
+                      ROUND(6371 * acos(cos(radians($lat)) * cos(radians(lat)) * cos(radians(lng)
+                          - radians($lng)) + sin(radians($lat)) * sin(radians(lat))),
+                            2)      dist
+               from restaurant) DIST ON DIST.rId = restaurant.id
+        LEFT JOIN (select restaurant_id, price, parking, kind from information) INFO ON INFO.restaurant_id = id
+         RIGHT JOIN (select fu.restaurant_id                userFutureRES,
+                            IF(fu.state = 'Y', 'YES', 'NO') userStar,
+                            fu.created_at                   userCreatedAt
+                     from future fu
+                     where fu.user_id = ?) USERFUTURE ON USERFUTURE.userFutureRES = restaurant.id";
+
+    $filter = "";
+
+    if($myId == $otherId){
+        $filter = " where userStar = 'YES' and ";
+    }elseif($myId != $otherId){
+//        $filter = " where ";
+        $filter = " where ";
+    }
+//    echo '  ' . $filter;
+//    $filter = $temp;
+
+//    $filter = " where ";
+    if(isset($area)){
+        $filter = $filter . $area . " and ";
+    }
+    if (isset($kind)) {
+        $filter = $filter . $kind . " and ";
+    }
+    if (isset($price)) {
+        $filter = $filter . $price . " and ";
+    }
+//    if (isset($radius)) {
+//        $filter = $filter . $radius . " and ";
+//    }
+//    if (isset($category)) {
+//        $filter = $filter . $category . " and ";
+//    }
+    if (isset($parking)) {
+        $filter = $filter . $parking . " and ";
+    }
+//    echo '  ' . $filter;
+
+    if($filter == " where "){
+        $filter = "";
+    }else{
+        $filter = substr($filter, 0, -4);
+    }
+
+//    echo '  ' . $filter;
+//    $filter = substr($filter, 0, -4);
+    /* if (isset($kind)) {
+         $filter = $filter . " and " . $kind;
+     }
+     if (isset($price)) {
+         $filter = $filter . " and " . $price ;
+     }
+     if (isset($radius)) {
+         $filter = $filter . " and " . $radius ;
+     }
+     if (isset($category)) {
+         $filter = $filter . " and " . $category;
+     }
+     if (isset($parking)) {
+         $filter = $filter . " and " . $parking;
+     }*/
+
+
+//    echo $filter;
+    $filter = $filter . " " . $order . ";";
+
+    $query = $query . $filter;
+
+//     echo $query;
+
+    $st = $pdo->prepare($query);
+    $st->execute([$myId, $otherId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    // title 앞에 번호 붙이기
+//    foreach ($res as $key => $value) {
+//
+//        $res[$key]['title'] = ($key + 1) . ". " . $res[$key]['title'];
+//
+//    }
+
+    $st = null;
+    $pdo = null;
+
+    return $res;
+}
+
+
+
 //
 ////READ
 //function testDetail($testNo)

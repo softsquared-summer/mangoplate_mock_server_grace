@@ -445,6 +445,9 @@ try {
             foreach ($real['images'] as $key => $value){
                 settype($real['images'][$key]['imageId'], "integer");
             }
+
+            settype($real['userId'], "integer");
+
 /*            foreach ($real as $key => $value){
                 // settype($real[$key]['images'], "integer");
 
@@ -464,7 +467,6 @@ try {
             break;
 
 
-            break;
 
 
 //        /*

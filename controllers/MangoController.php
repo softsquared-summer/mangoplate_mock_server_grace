@@ -291,12 +291,12 @@ try {
                 addErrorLogs($errorLogs, $res, $req);
                 return;
             }
-            
+
             $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
             $userEmail = $data->email;
 
             $userId = getUserId($userEmail);
-            
+
             $res->result = getMe($userId);
             $res->isSuccess = TRUE;
             $res->code = 200;
@@ -328,10 +328,10 @@ try {
             $userEmail = $data->email;
 
             $userId = getUserId($userEmail);
-            
+
             // 몇 개 들어왔는지 확인
             $num = 0;
-            
+
 
             $name = $req->name;
             $profileUrl = $req->profileUrl;
@@ -345,17 +345,17 @@ try {
                 echo json_encode($res);
                 return;
             } else {
-                if(isset($name)){
+                if (isset($name)) {
                     $num++;
                 }
-                if(isset($phone)){
+                if (isset($phone)) {
                     $num++;
                 }
-                if(isset($profileUrl)){
+                if (isset($profileUrl)) {
                     $num++;
                 }
 
-                if($num > 1){
+                if ($num > 1) {
                     $res->isSuccess = FALSE;
                     $res->code = 400;
                     $res->message = "name, profileUrl, phone 중 한 가지만 입력하세요.";
@@ -363,7 +363,7 @@ try {
                     return;
                 }
 
-                if(isset($name)){
+                if (isset($name)) {
                     // name
                     $nameLen = mb_strlen($name, 'utf-8');
                     if ($nameLen < 2 or $nameLen > 20) {
@@ -373,7 +373,6 @@ try {
                         echo json_encode($res);
                         break;
                     }
-
 
 
                     $temp = patchUserName($userId, $name);
@@ -436,7 +435,7 @@ try {
                         break;
                     }
 
-                   $temp = patchUserProfileUrl($userId, $profileUrl);
+                    $temp = patchUserProfileUrl($userId, $profileUrl);
 
                     if ($temp == 'false') {
                         $res->isSuccess = FALSE;
@@ -503,21 +502,21 @@ try {
 
             $type = $_GET['type'];
 
-            if($type =='main'){
+            if ($type == 'main') {
                 $res->result = getEventsMain();
                 $res->isSuccess = TRUE;
                 $res->code = 200;
                 $res->message = "이벤트 목록 조회(메인)";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
-            }elseif($type =='detail'){
+            } elseif ($type == 'detail') {
                 $res->result = getEventsDetail();
                 $res->isSuccess = TRUE;
                 $res->code = 200;
                 $res->message = "이벤트 목록 조회(내정보)";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 break;
-            }else{
+            } else {
                 $res->isSuccess = FALSE;
                 $res->code = 400;
                 $res->message = "Query Params를 입력하세요 (type = main, detail)";
@@ -525,11 +524,11 @@ try {
                 break;
             }
 
-       /*
-       * API No. 2-3
-       * API Name : 이벤트 상세 조회
-       * 마지막 수정 날짜 : 20.05.01
-       */
+        /*
+        * API No. 2-3
+        * API Name : 이벤트 상세 조회
+        * 마지막 수정 날짜 : 20.05.01
+        */
         case "getEventById":
             http_response_code(200);
 
@@ -545,8 +544,8 @@ try {
             }
 
             $eventId = $vars['eventId'];
-            
-            if(!isExistEvent($eventId)){
+
+            if (!isExistEvent($eventId)) {
                 $res->isSuccess = FALSE;
                 $res->code = 400;
                 $res->message = "존재하지 않는 이벤트 입니다.";
@@ -582,7 +581,7 @@ try {
             $lat = $_GET['lat'];
             $lng = $_GET['lng'];
 
-            if(!isset($lng) or !isset($lat)){
+            if (!isset($lng) or !isset($lat)) {
                 $res->isSuccess = FALSE;
                 $res->code = 400;
                 $res->message = "Query Params를 입력하세요.(lat = (위도), lng = (경도))";
@@ -592,7 +591,7 @@ try {
 
             $result = getNear($lat, $lng);
 
-            if($result == null){
+            if ($result == null) {
                 $res->isSuccess = FALSE;
                 $res->code = 400;
                 $res->message = "10km 이내의 지역이 없습니다.";
@@ -671,7 +670,7 @@ try {
                     $res->isSuccess = TRUE;
                     $res->code = 200;
                     $res->message = "지역 목록 조회 - EAT딜";
-                }else{
+                } else {
                     $res->isSuccess = FALSE;
                     $res->code = 400;
                     $res->message = "Query params를 확인하세요. (type은 비워져 있거나, eatdeal 만 가능합니다.)";
@@ -729,9 +728,9 @@ try {
 
             $area = $_GET['area'];
 
-            if(!isset($area)){
+            if (!isset($area)) {
 
-            }else{
+            } else {
 
                 // echo $area;
                 $realArea = "(";
@@ -749,16 +748,16 @@ try {
                     break;
                 }
 
-                foreach ($areaIdArray as $key => $value){
-                    $realArea = $realArea . '\''.$areaIdArray[$key].'\'';
-                    if ($value === end($areaIdArray)){
+                foreach ($areaIdArray as $key => $value) {
+                    $realArea = $realArea . '\'' . $areaIdArray[$key] . '\'';
+                    if ($value === end($areaIdArray)) {
                         $realArea = $realArea . ')';
-                    }else{
+                    } else {
                         $realArea = $realArea . ',';
                     }
                 }
 
-                $area = ' where area_id in '. $realArea;
+                $area = ' where area_id in ' . $realArea;
             }
 
             $res->result = getEatdeals($area);
@@ -789,7 +788,7 @@ try {
 
             $eatdealId = $vars["eatdealId"];
 
-            if(!isExistEatdeal($eatdealId)){
+            if (!isExistEatdeal($eatdealId)) {
                 $res->isSuccess = FALSE;
                 $res->code = 400;
                 $res->message = "해당 EAT딜 식별자가 없습니다.";
@@ -801,7 +800,7 @@ try {
             $temp3 = Array();
             $temp['img'] = getEatdealImg($eatdealId);
             $temp2 = getEatdeal($eatdealId);
-            $temp3 =getEatdealDetail($eatdealId);
+            $temp3 = getEatdealDetail($eatdealId);
             $real = array_merge($temp, $temp2, $temp3);
 
             $res->result = $real;
@@ -829,7 +828,7 @@ try {
                 addErrorLogs($errorLogs, $res, $req);
                 return;
             }
-            
+
             $restaurantsId = $vars['restaurantId'];
 
             $res->result = getImages($restaurantsId);
@@ -867,7 +866,6 @@ try {
             $restaurantId = $vars['restaurantId'];
 
 
-
             // 있는지 먼저 검사하고 없으면 insert, 있으면 update
 
 
@@ -875,7 +873,7 @@ try {
             if (!isExistFuture($userId, $restaurantId)) {
                 $status = 'insert';
                 postFuture($userId, $restaurantId, $status);
-                
+
                 $res->result = userFutureStatus($userId, $restaurantId);
                 $res->isSuccess = TRUE;
                 $res->code = 200;
@@ -885,7 +883,7 @@ try {
             } else {
                 $status = 'update';
                 postFuture($userId, $restaurantId, $status);
-                
+
                 $res->result = userFutureStatus($userId, $restaurantId);
                 $res->isSuccess = TRUE;
                 $res->code = 200;
@@ -895,13 +893,369 @@ try {
             }
 
 
-
             $res->result = postFuture($restaurantId);
             $res->isSuccess = TRUE;
             $res->code = 200;
             $res->message = "식당 가고싶다 추가/삭제";
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
+
+
+        /*
+        * API No. 11-3
+        * API Name : 특정 user 가고싶다 목록
+        * 마지막 수정 날짜 : 20.05.06
+        */
+        case "getFutures":
+            /*            http_response_code(200);
+
+                        $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+                        if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                            $res->isSuccess = FALSE;
+                            $res->code = 400;
+                            $res->message = "유효하지 않은 토큰입니다";
+                            echo json_encode($res, JSON_NUMERIC_CHECK);
+                            addErrorLogs($errorLogs, $res, $req);
+                            return;
+                        }
+
+                        $res->result = getFutures($myId, $userId, $area, $kind, $price, $order, $category, $parking);
+                        $res->isSuccess = TRUE;
+                        $res->code = 200;
+                        $res->message = "특정 user 가고싶다 목록";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        break;*/
+
+
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
+            $userEmail = $data->email;
+
+
+            $myId = getUserId($userEmail);
+            $otherId = $vars['userId'];
+//            $userId = getUserId($userEmail);
+            // echo $userId;
+
+//            echo $area;
+//            $area = str_replace(" ", "", $area);
+//            echo $area;
+//            $myArray = explode(',', $area);
+//
+//            print_r($myArray);
+//
+//            echo $myArray[0];
+
+
+//            $query = "SELECT EXISTS(SELECT * FROM user u WHERE u.email= ?) AS exist;";
+//            $value = "가나다라마바사";
+//
+//            $query1 = str_replace("u.email=", "u.name=", $query);
+//            echo $query1;
+
+            $lat = $_GET['lat'];
+            $lng = $_GET['lng'];
+
+//            $type = $_GET['type'];
+
+            if (!isset($lng) or !isset($lat)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "Query Params를 입력하세요.(lat = (위도), lng = (경도))";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+//            if (!($type == 'main') and !($type == 'map')) {
+//                $res->isSuccess = FALSE;
+//                $res->code = 400;
+//                $res->message = "Query Params를 확인하세요. (type = main, map)";
+//                echo json_encode($res, JSON_NUMERIC_CHECK);
+//                return;
+//            }
+
+
+            //main인지 map인지만 따져서 함수 2개 각각.
+
+            $isNear = false;
+            $area = $_GET['area'];
+
+            // $area 받는 즉시 $radius 체크하기. 나중에 $area 없으면 값을 가까운 값으로 넣는단 말이지.
+//            $radius = $_GET['radius'];
+//            if(!isset($radius)){
+//
+//                if(!isset($area)){
+//                    // echo "이게 나와야 해";
+//                    // $area X $radius X 일 때
+//                    $radius = 'DIST.dist < 3';
+//                }
+//            }else{
+//                if (isset($area)) {
+////                    if(!$isNear){
+//                    $res->isSuccess = FALSE;
+//                    $res->code = 400;
+//                    $res->message = "Query Params를 확인하세요.(area가 있을 때는 radius에 값을 할당할 수 없습니다.)";
+//                    echo json_encode($res, JSON_NUMERIC_CHECK);
+//                    return;
+////                    }
+//                }else{
+//                    if($radius == '0.5'){
+//                        $radius = 'DIST.dist < 0.5';
+//                    }elseif($radius == '1'){
+//                        $radius ='DIST.dist < 1';
+//                    }
+//                    elseif($radius == '3'){
+//                        $radius ='DIST.dist < 3';
+//                    }else{
+//                        $res->isSuccess = FALSE;
+//                        $res->code = 400;
+//                        $res->message = "Query Params를 확인하세요.(radius 값은 0.5, 1, 3 입니다.)";
+//                        echo json_encode($res, JSON_NUMERIC_CHECK);
+//                        return;
+//                    }
+//                }
+//            }
+
+
+//            // 키워드
+//            $keyword = $_GET['keyword'];
+
+
+            if (!isset($area)) {
+
+//                if(!isset($keyword)){
+//                    // 여기는 area 설정 안되어 있을 경우에, 자신과 가장 가까운 지역을 넣는건데,
+//                    // 만약, keyword가 포함되어 있으면 area에 아무것도 넣지마
+//
+//                    $result = getNear($lat, $lng);
+//
+//
+//                    $nearestAreaId = $result[0]['areaId'];
+//                    $nearestAreaName = $result[0]['name'];
+//                    $area = 'AREA.a_name in (\'' . $nearestAreaName . '\')';
+//
+//                    $isNear = true;
+//                }
+
+            } else {
+
+                $realArea = "(";
+
+                $temp = str_replace(" ", "", $area);
+                $areaArray = explode(',', $temp);
+
+                $areaIdArray = getAreaId($areaArray);
+                if ($areaIdArray == null) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "Query Params를 확인하세요. (area = 올바르지 않은 (지역명)이 있습니다.)";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+
+                foreach ($areaArray as $key => $value) {
+                    $realArea = $realArea . '\'' . $areaArray[$key] . '\'';
+                    if ($value === end($areaArray)) {
+                        $realArea = $realArea . ')';
+                    } else {
+                        $realArea = $realArea . ',';
+                    }
+                }
+
+                $area = 'AREA.a_name in ' . $realArea;
+
+            }
+
+            $kind = $_GET['kind'];
+            if (!isset($kind)) {
+
+            } else {
+
+                $realKind = "(";
+
+                $temp = str_replace(" ", "", $kind);
+                $kindArray = explode(',', $temp);
+
+                $kindValue = array('한식', '일식', '중식', '양식', '세계음식', '뷔페', '카페', '주점');
+                foreach ($kindArray as $key => $value) {
+
+                    $validPrice = $kindArray[$key];
+                    if (!in_array($validPrice, $kindValue)) {
+                        $res->isSuccess = FALSE;
+                        $res->code = 400;
+                        $res->message = "Query Params를 확인하세요.(kind 값은 한식, 일식, 중식, 양식, 세계음식, 뷔페, 카페, 주점 입니다.)";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+
+                    $realKind = $realKind . '\'' . $kindArray[$key] . '\'';
+                    if ($value === end($kindArray)) {
+                        $realKind = $realKind . ')';
+                    } else {
+                        $realKind = $realKind . ',';
+                    }
+                }
+
+                $kind = 'kind in ' . $realKind;
+
+                // echo $realKind;
+
+            }
+
+            $price = $_GET['price'];
+            if (!isset($price)) {
+
+            } else {
+
+
+                $realPrice = "(";
+
+                $temp = str_replace(" ", "", $price);
+                $priceArray = explode(',', $temp);
+
+
+                // 유효성 검사
+                $priceValue = array('0', '1', '2', '3');
+
+                foreach ($priceArray as $key => $value) {
+
+                    $validPrice = $priceArray[$key];
+                    if (!in_array($validPrice, $priceValue)) {
+                        $res->isSuccess = FALSE;
+                        $res->code = 400;
+                        $res->message = "Query Params를 확인하세요.(price 값은 0, 1, 2, 3 입니다.)";
+                        echo json_encode($res, JSON_NUMERIC_CHECK);
+                        return;
+                    }
+
+
+                    $realPrice = $realPrice . '\'' . $priceArray[$key] . '\'';
+                    if ($value === end($priceArray)) {
+                        $realPrice = $realPrice . ')';
+                    } else {
+                        $realPrice = $realPrice . ',';
+                    }
+                }
+
+                $price = 'price in ' . $realPrice;
+            }
+
+
+            $order = $_GET['order'];
+            if (!isset($order)) {
+                // API 4-1번과 달라진 점: 정렬 default - <평점순>이 아닌 <최신순>
+                $order = 'order by userCreatedAt desc';
+            } else {
+                if ($order == '최신순') { // API 4-1번과 달라진 점: 정렬 - <최신순> 추가 됨
+                    $order = 'order by userCreatedAt desc';
+                } elseif ($order == '평점순') {
+                    $order = 'order by rating desc';
+                } elseif ($order == '리뷰순') {
+                    $order = 'order by reviewNum desc';
+                } elseif ($order == '거리순') {
+                    $order = 'order by dist';
+                } else {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "Query Params를 확인하세요.(order는 최신순 / 평점순 / 리뷰순 / 거리순 중 하나 입니다.)";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+            }
+
+
+//            $category = $_GET['category'];
+//            if(!isset($category)){
+//
+//            }else{
+//                if($category=='가고싶다'){
+//                    $category='star = \'YES\'';
+//                }elseif($category=='전체'){
+//                    $category=null;
+//                }else{
+//                    $res->isSuccess = FALSE;
+//                    $res->code = 400;
+//                    $res->message = "Query Params를 확인하세요.(category는 전체 / 가고싶다 중 하나 입니다.)";
+//                    echo json_encode($res, JSON_NUMERIC_CHECK);
+//                    break;
+//                }
+//            }
+
+
+            $parking = $_GET['parking'];
+            if (!isset($parking)) {
+
+            } else {
+                if ($parking == '가능') {
+                    $parking = 'parking is not null';
+                } elseif ($parking == '상관없음') {
+                    $parking = null;
+                } else {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "Query Params를 확인하세요.(parking은 상관없음 /가능 중 하나 입니다.)";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+            }
+
+
+            // paging 처리하는 것 받기
+            $page = $_GET['page'];
+            $parking = $_GET['per'];
+
+
+//            if($type == 'main'){
+
+            $restaurants = getFutures($lat, $lng, $myId, $otherId, $area, $kind, $price, $order, $parking);
+
+
+//            if($type == 'main'){
+
+//                $restaurants = getRestaurants($lat, $lng, $userId, $area, $kind, $price, $radius, $order, $category, $parking, $keyword);
+
+            if (empty($restaurants)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "등록된 식당이 없습니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                break;
+            }
+
+            // 콤마 때문에 numeric_check 지우고 int값 필요한 것들은 변환해줬음.
+            foreach ($restaurants as $key => $value) {
+                settype($restaurants[$key]['areaId'], "integer");
+                settype($restaurants[$key]['restaurantId'], "integer");
+            }
+
+            $res->result = $restaurants;
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "특정 user 가고싶다 목록";
+
+            echo json_encode($res);
+            break;
+
+//            }elseif($type == 'map'){
+//
+//            }else{
+//
+//            }
+//            echo json_encode($res, JSON_NUMERIC_CHECK);
+//            break;
+
 
 //        /*
 //         * API No. 0
