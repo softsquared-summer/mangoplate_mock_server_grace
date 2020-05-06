@@ -117,17 +117,18 @@ function getRestaurants($lat, $lng, $userId, $area, $kind, $price, $radius, $ord
     $query = "SELECT area_id                                           areaId,
        AREA.a_name                                       area,
        id                                                restaurantId,
-        lat,
+       lat,
        lng,
-       image_url                                         img,
+       IF(image_url is null, '', image_url)              img,
        IF(FUTURE.star is null, 'NO', star)               star,
        name                                              title,
        CONCAT(DIST.dist, 'km')                           distance,
-       IF(SEEN.seenNum is null, 0, seenNum)              seenNum,
+       IF(SEEN.seenNum is null,
+          0, seenNum)                                    seenNum,
        REVIEW.reviewNum,
-       RATING.rating,
+       IF(RATING.rating is null, '', rating)             rating,
        CASE
-           WHEN (REVIEW.reviewNum = 0) THEN null
+           WHEN (REVIEW.reviewNum = 0) THEN ''
            WHEN (REVIEW.reviewNum <= 3) THEN 'gray'
            WHEN (REVIEW.reviewNum > 3) THEN 'orange' END ratingColor
 FROM restaurant
@@ -288,18 +289,18 @@ lat, lng,
        SEEN.seenNum,
        REVIEW.reviewNum,
        IF(STAR.starNum is null, 0, STAR.starNum)         starNum,
-       RATING.rating,
+       IF(RATING.rating is null, '', rating) rating,
        CASE
-           WHEN (REVIEW.reviewNum = 0) THEN null
+           WHEN (REVIEW.reviewNum = 0) THEN  ''
            WHEN (REVIEW.reviewNum <= 3) THEN 'gray'
            WHEN (REVIEW.reviewNum > 3) THEN 'orange' END ratingColor,
        IF(FUTURE.star is null, 'NO', star)               userStar,
        address,
        oldAddress,
-       phone,
+       IF(phone is null, '', phone) phone,
        USER.id userId,
        USER.userName,
-       USER.profile_url userProfileUrl,
+       IF(USER.profile_url is null, '', USER.profile_url) userProfileUrl,
        INFO.infoUpdate, infoTime, infoHoliday, infoDescription, infoPrice, infoKind, infoParking, infoSite
 from restaurant
          LEFT JOIN (select restaurant_id,
@@ -333,7 +334,9 @@ LEFT JOIN (select restaurant_id rId,
        CASE
            WHEN (parking = '유료') THEN '유료주차 가능'
            WHEN (parking = '무료') THEN '무료주차 가능'
-           WHEN (parking is null) THEN '주차공간없음' END              infoParking,
+           WHEN (parking is null) THEN '주차공간없음' 
+           WHEN (parking ='') THEN '주차공간없음'
+           END              infoParking,
        site infoSite
 from information) INFO ON INFO.rId = restaurant.id
 where restaurant.id = ?;";
