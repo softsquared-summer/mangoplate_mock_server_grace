@@ -3,6 +3,7 @@ require './pdos/DatabasePdo.php';
 require './pdos/IndexPdo.php';
 require './vendor/autoload.php';
 require './pdos/MangoPdo.php';
+require './pdos/FriendPdo.php';
 
 use \Monolog\Logger as Logger;
 use Monolog\Handler\StreamHandler;
@@ -67,6 +68,11 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('POST', '/restaurants/{restaurantId}/future', ['MangoController', 'postFuture']);
     $r->addRoute('GET', '/users/{userId}/future', ['MangoController', 'getFutures']);
 
+    // 12. 친구
+    $r->addRoute('GET', '/users/{userId}/follower', ['FriendController', 'getfollower']);
+    $r->addRoute('GET', '/users/{userId}/following', ['FriendController', 'getfollowing']);
+
+
 });
 
 // Fetch method and URI from somewhere
@@ -126,11 +132,11 @@ switch ($routeInfo[0]) {
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/RestaurantController.php';
                 break;
-            /*case 'SearchController':
+            case 'FriendController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
-                require './controllers/SearchController.php';
+                require './controllers/FriendController.php';
                 break;
-            case 'ReviewController':
+            /*case 'ReviewController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/ReviewController.php';
                 break;
