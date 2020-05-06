@@ -385,6 +385,8 @@ try {
                 foreach ($restaurants as $key => $value){
                     settype($restaurants[$key]['areaId'], "integer");
                     settype($restaurants[$key]['restaurantId'], "integer");
+                    settype($restaurants[$key]['lat'], "float");
+                    settype($restaurants[$key]['lng'], "float");
                 }
 
                 $res->result = $restaurants;
@@ -467,8 +469,10 @@ try {
 
             foreach ($real['images'] as $key => $value){
                 settype($real['images'][$key]['imageId'], "integer");
-            }
 
+            }
+            settype($real['lat'], "float");
+            settype($real['lng'], "float");
             settype($real['userId'], "integer");
 
 /*            foreach ($real as $key => $value){

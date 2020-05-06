@@ -3,7 +3,9 @@ require './pdos/DatabasePdo.php';
 require './pdos/IndexPdo.php';
 require './vendor/autoload.php';
 require './pdos/MangoPdo.php';
+require './pdos/RestaurantPdo.php';
 require './pdos/FriendPdo.php';
+
 
 use \Monolog\Logger as Logger;
 use Monolog\Handler\StreamHandler;
