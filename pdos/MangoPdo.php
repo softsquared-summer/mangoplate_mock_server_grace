@@ -613,7 +613,6 @@ limit ;";*/
     return $res;
 }
 
-
 function isExistRestaurant($restaurantId){
     $pdo = pdoSqlConnect();
     $query = "SELECT EXISTS(SELECT * FROM restaurant r WHERE r.id= ?) AS exist;";
@@ -1015,12 +1014,12 @@ order by created_at desc;";
 
 function isExistFuture($userId, $restaurantId){
     $pdo = pdoSqlConnect();
-    $query = "";
+    $query = "SELECT EXISTS(SELECT * FROM future f WHERE f.user_id=? and f.restaurant_id=?) AS exist;";
 
 
     $st = $pdo->prepare($query);
     //    $st->execute([$param,$param]);
-    $st->execute([$eatdealId]);
+    $st->execute([$userId, $restaurantId]);
     $st->setFetchMode(PDO::FETCH_ASSOC);
     $res = $st->fetchAll();
 
@@ -1030,10 +1029,46 @@ function isExistFuture($userId, $restaurantId){
     return intval($res[0]["exist"]);
 }
 
-function postFuture(){
+function postFuture($userId, $restaurantId, $status){
+    $pdo = pdoSqlConnect();
+    $insertQuery = "INSERT INTO future (user_id, restaurant_id, state) VALUES (?, ?, 'Y');";
+    $updateQuery = "UPDATE future SET state = IF(state = 'Y', 'N', 'Y')  WHERE user_id =? and restaurant_id =?;";
+
+    $query = "";
+
+    if($status == 'insert'){
+        $query = $insertQuery;
+    }elseif($status == 'update'){
+        $query = $updateQuery;
+    }
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userId, $restaurantId]);
+
+    $st = null;
+    $pdo = null;
 
 }
 
+
+function userFutureStatus($userId, $restaurantId){
+
+    $pdo = pdoSqlConnect();
+    $query = "select IF(state = 'N', 'NO', 'YES') state
+from future
+where user_id =? and restaurant_id = ?";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$userId, $restaurantId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0];
+
+}
 //
 ////READ
 //function testDetail($testNo)

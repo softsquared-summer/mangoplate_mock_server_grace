@@ -839,6 +839,70 @@ try {
             echo json_encode($res, JSON_NUMERIC_CHECK);
             break;
 
+
+        /*
+        * API No. 11-1
+        * API Name : 가고싶다 추가/삭제
+        * 마지막 수정 날짜 : 20.05.05
+        */
+        case "postFuture":
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
+            $userEmail = $data->email;
+
+            $userId = getUserId($userEmail);
+
+            $restaurantId = $vars['restaurantId'];
+
+
+
+            // 있는지 먼저 검사하고 없으면 insert, 있으면 update
+
+
+            $status = '';
+            if (!isExistFuture($userId, $restaurantId)) {
+                $status = 'insert';
+                postFuture($userId, $restaurantId, $status);
+                
+                $res->result = userFutureStatus($userId, $restaurantId);
+                $res->isSuccess = TRUE;
+                $res->code = 200;
+                $res->message = "식당 가고싶다 - 처음 누름";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            } else {
+                $status = 'update';
+                postFuture($userId, $restaurantId, $status);
+                
+                $res->result = userFutureStatus($userId, $restaurantId);
+                $res->isSuccess = TRUE;
+                $res->code = 200;
+                $res->message = "식당 가고싶다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+
+
+            $res->result = postFuture($restaurantId);
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "식당 가고싶다 추가/삭제";
+            echo json_encode($res, JSON_NUMERIC_CHECK);
+            break;
+
 //        /*
 //         * API No. 0
 //         * API Name : 테스트 Path Variable API
