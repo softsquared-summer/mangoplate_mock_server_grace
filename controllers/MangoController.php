@@ -653,7 +653,7 @@ try {
 
             $type = $_GET['type'];
 
-            $distirctsId = $vars["districtsId"];
+            $distirctsId = $vars["districtId"];
 
             if (!isValidDistrict($distirctsId)) {
                 $res->isSuccess = FALSE;
@@ -830,7 +830,7 @@ try {
                 return;
             }
             
-            $restaurantsId = $vars['restaurantsId'];
+            $restaurantsId = $vars['restaurantId'];
 
             $res->result = getImages($restaurantsId);
             $res->isSuccess = TRUE;

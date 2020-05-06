@@ -433,7 +433,13 @@ try {
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
-            $real = array_merge($temp, $temp2, $temp3, $temp4, $temp5);
+
+            if(empty($temp4['menu'])){
+                $real = array_merge($temp, $temp2, $temp3);
+            }else{
+                $real = array_merge($temp, $temp2, $temp3, $temp4, $temp5);
+            }
+
 
 
             foreach ($real['images'] as $key => $value){

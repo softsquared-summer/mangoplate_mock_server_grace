@@ -630,7 +630,6 @@ function isExistRestaurant($restaurantId){
     return intval($res[0]["exist"]);
 }
 
-
 function getRestaurant($userId, $restaurantId){
     $pdo = pdoSqlConnect();
 
@@ -777,7 +776,11 @@ where restaurant_id = ?;";
     $st = null;
     $pdo = null;
 
-    // print_r($res);
+    if(empty($res)){
+        return null;
+    }
+//    print_r($res);
+    // print($res);
     return $res;
 }
 
@@ -800,6 +803,7 @@ limit 1;";
     // print_r($res);
     return $res[0];
 }
+
 // 5. 검색어
 function getKeywords()
 {
@@ -983,7 +987,6 @@ QR코드 스캔이 불가능할 시 매장 직원에게 화면 하단 12자리 �
     return $res[0];
 }
 
-
 // 6. 사진
 function getImages($restaurantsId)
 {
@@ -1008,6 +1011,28 @@ order by created_at desc;";
     return $res;
 }
 
+// 11. 가고싶다
+
+function isExistFuture($userId, $restaurantId){
+    $pdo = pdoSqlConnect();
+    $query = "";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$eatdealId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;
+    $pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+function postFuture(){
+
+}
 
 //
 ////READ

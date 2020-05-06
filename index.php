@@ -47,7 +47,7 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     // 3. 지역
     $r->addRoute('GET', '/near-districts', ['MangoController', 'getNear']);
     $r->addRoute('GET', '/districts', ['MangoController', 'getDistricts']);
-    $r->addRoute('GET', '/districts/{districtsId}', ['MangoController', 'getAreas']);
+    $r->addRoute('GET', '/districts/{districtId}', ['MangoController', 'getAreas']);
 
     // 4. 식당
     $r->addRoute('GET', '/restaurants', ['RestaurantController', 'getRestaurants']);
@@ -61,7 +61,10 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/eatdeals/{eatdealId}', ['MangoController', 'getEatdealDetail']);
     
     // 6. 사진
-    $r->addRoute('GET', '/restaurants/{restaurantsId}/images', ['MangoController', 'getImages']);
+    $r->addRoute('GET', '/restaurants/{restaurantId}/images', ['MangoController', 'getImages']);
+
+    // 11. 가고싶다
+     $r->addRoute('POST', '/restaurants/{restaurantId}/future', ['MangoController', 'postFuture']);
 
 });
 
