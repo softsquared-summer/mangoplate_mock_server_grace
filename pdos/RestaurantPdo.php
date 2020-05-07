@@ -56,7 +56,7 @@ function getNearRestaurants($lat, $lng, $userId, $nearestAreaId)
        CONCAT(DIST.dist, 'km')                           distance,
        IF(SEEN.seenNum is null, 0, seenNum)              seenNum,
        REVIEW.reviewNum,
-       IF(RATING.rating is null, '', RATING.rating) rating,
+       IF(RATING.rating is null, '', FORMAT(RATING.rating, 1)) rating,
        CASE
            WHEN (REVIEW.reviewNum = 0) THEN null
            WHEN (REVIEW.reviewNum <= 3) THEN 'gray'
@@ -127,7 +127,7 @@ function getRestaurants($lat, $lng, $userId, $area, $kind, $price, $radius, $ord
        IF(SEEN.seenNum is null,
           0, seenNum)                                    seenNum,
        REVIEW.reviewNum,
-       IF(RATING.rating is null, '', rating)             rating,
+       IF(RATING.rating is null, '', FORMAT(RATING.rating, 1))             rating,
        CASE
            WHEN (REVIEW.reviewNum = 0) THEN ''
            WHEN (REVIEW.reviewNum <= 3) THEN 'gray'
@@ -291,7 +291,7 @@ lat, lng,
        SEEN.seenNum,
        REVIEW.reviewNum,
        IF(STAR.starNum is null, 0, STAR.starNum)         starNum,
-       IF(RATING.rating is null, '', rating) rating,
+       IF(RATING.rating is null, '', FORMAT(RATING.rating, 1)) rating,
        CASE
            WHEN (REVIEW.reviewNum = 0) THEN  ''
            WHEN (REVIEW.reviewNum <= 3) THEN 'gray'

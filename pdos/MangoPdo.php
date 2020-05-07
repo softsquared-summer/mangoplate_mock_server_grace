@@ -403,10 +403,11 @@ function getEatdeals($area)
        FORMAT(sale_price, 0)                                                         salePrice,
        title,
        item,
-       DES.description,
+       IF(DES.description is null, '', DES.description) description,
        CASE
            WHEN (quantity = 0) THEN '모두 판매되었습니다.'
-           WHEN (quantity != 0 and quantity < 10) THEN CONCAT(quantity, '개 남음') END  quantity
+           WHEN (quantity != 0 and quantity < 10) THEN CONCAT(quantity, '개 남음') 
+           WHEN (quantity >= 10) THEN '' END  quantity
 from eatdeal
          JOIN (select eatdeal_id, description from eatdeal_detail) DES ON DES.eatdeal_id = id
          JOIN (select eatdeal_id, image_url
