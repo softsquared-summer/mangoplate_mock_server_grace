@@ -37,7 +37,8 @@ try {
                 if (!preg_match("/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i", $email)) {
                     $res->isSuccess = FALSE;
                     $res->code = 400;
-                    $res->message = "회원가입 실패(사유: email 형식이 올바르지 않습니다.)";
+//                    $res->message = "회원가입 실패(사유: email 형식이 올바르지 않습니다.)";
+                    $res->message = "잘못된 메일주소입니다. 다시 입력해주세요.";
                     echo json_encode($res);
                     break;
                 } else {
@@ -54,14 +55,16 @@ try {
                 if ($pw1 != $pw2) {
                     $res->isSuccess = FALSE;
                     $res->code = 400;
-                    $res->message = "회원가입 실패(사유: pw1, pw2가 일치하지 않습니다.)";
+                    $res->message = "비밀번호가 일치하지 않습니다.";
+//                    $res->message = "회원가입 실패(사유: pw1, pw2가 일치하지 않습니다.)";
                     echo json_encode($res);
                     break;
                 } else {
                     if (!preg_match("/^[A-Za-z0-9]{6,12}$/", $pw1)) {
                         $res->isSuccess = FALSE;
                         $res->code = 400;
-                        $res->message = "회원가입 실패(사유: pw은 숫자, 문자를 포함한 6~12자리를 입력하세요.)";
+                        $res->message = "비밀번호를 다시 확인해 주세요";
+//                        $res->message = "회원가입 실패(사유: pw은 숫자, 문자를 포함한 6~12자리를 입력하세요.)";
                         echo json_encode($res);
                         break;
                     }
@@ -132,7 +135,8 @@ try {
                 if (!isset($email) or !isset($pw)) {
                     $res->isSuccess = FALSE;
                     $res->code = 400;
-                    $res->message = "email, pw를 입력하세요.";
+                    $res->message = "이메일 주소 또는 비밀번호를 다시 확인하세요";
+//                    $res->message = "email, pw를 입력하세요.";
                     echo json_encode($res, JSON_NUMERIC_CHECK);
                     return;
                 }
