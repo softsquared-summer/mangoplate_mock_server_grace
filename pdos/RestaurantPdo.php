@@ -56,7 +56,7 @@ function getNearRestaurants($lat, $lng, $userId, $nearestAreaId)
        CONCAT(DIST.dist, 'km')                           distance,
        IF(SEEN.seenNum is null, 0, seenNum)              seenNum,
        REVIEW.reviewNum,
-       RATING.rating,
+       IF(RATING.rating is null, '', RATING.rating) rating,
        CASE
            WHEN (REVIEW.reviewNum = 0) THEN null
            WHEN (REVIEW.reviewNum <= 3) THEN 'gray'
@@ -72,6 +72,7 @@ FROM restaurant
                     where user_id = ?) FUTURE ON FUTURE.restaurant_id = id
          LEFT JOIN (select restaurant_id, COUNT(*) reviewNum
                     from review
+                    where review.isDeleted ='N'
                     group by restaurant_id) REVIEW ON REVIEW.restaurant_id = id
          LEFT JOIN (select *
                     from (select rv.restaurant_id, REIMG.image_url, rv.created_at
@@ -79,7 +80,7 @@ FROM restaurant
                                    LEFT JOIN (select *
                                               from restaurant_image
                                               group by review_id) REIMG ON REIMG.review_id = rv.id
-                          where image_url is not null
+                          where image_url is not null and rv.isDeleted ='N'
                           order by restaurant_id, created_at asc
                           LIMIT 18446744073709551615) as a
                     group by a.restaurant_id) IMG ON IMG.restaurant_id = id
@@ -142,6 +143,7 @@ FROM restaurant
                     where user_id = ?) FUTURE ON FUTURE.restaurant_id = id
          LEFT JOIN (select restaurant_id, COUNT(*) reviewNum
                     from review
+                     where isDeleted ='N'
                     group by restaurant_id) REVIEW ON REVIEW.restaurant_id = id
          LEFT JOIN (select *
                     from (select rv.restaurant_id, REIMG.image_url, rv.created_at
@@ -149,7 +151,7 @@ FROM restaurant
                                    LEFT JOIN (select *
                                               from restaurant_image
                                               group by review_id) REIMG ON REIMG.review_id = rv.id
-                          where image_url is not null
+                          where image_url is not null and rv.isDeleted ='N'
                           order by restaurant_id, created_at asc
                           LIMIT 18446744073709551615) as a
                     group by a.restaurant_id) IMG ON IMG.restaurant_id = id
@@ -308,6 +310,7 @@ from restaurant
                     from seen) SEEN ON SEEN.restaurant_id = id
          LEFT JOIN (select restaurant_id, FORMAT(COUNT(*), 0) reviewNum
                     from review
+                    where isDeleted = 'N'
                     group by restaurant_id) REVIEW ON REVIEW.restaurant_id = id
          LEFT JOIN (select restaurant_id, COUNT(*) starNum
                     from future
@@ -372,7 +375,7 @@ function getRestaurantImages($restaurantId)
 from restaurant_image
          RIGHT JOIN (select id reviewId, created_at
                      from review
-                     where restaurant_id = ?) REVIEW ON REVIEW.reviewId = review_id
+                     where restaurant_id = ? and isDeleted ='N') REVIEW ON REVIEW.reviewId = review_id
 where image_url is not null
 order by created_at desc
 limit 5;";

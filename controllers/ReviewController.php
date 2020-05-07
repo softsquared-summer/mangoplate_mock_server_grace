@@ -188,6 +188,101 @@ try {
             echo json_encode($res);
             break;
 
+        /*
+        * API No. 7-5
+        * API Name : 리뷰 삭제 (내 것만 가능)
+        * 마지막 수정 날짜 : 20.05.08
+        */
+        case "deleteReview":
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $reviewId = $vars['reviewId'];
+
+            // 해당 reviewId 작성자가 token의 유저가 맞는지 확인
+            $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
+            $userEmail = $data->email;
+            $userId = getUserId($userEmail);
+
+
+            if(!isExistReview($reviewId)){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "해당 리뷰가 없습니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            if(!isMatchedReview($userId, $reviewId)){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "자신의 리뷰만 삭제할 수 있습니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            if(isDeleted($reviewId) == 'Y'){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "이미 삭제된 리뷰입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            $result = deleteReview($reviewId);
+            if($result == 'false'){
+                $res->isSuccess = FALSE;
+                $res->code = 500;
+                $res->message = "delete 실패";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "리뷰 삭제 성공";
+            echo json_encode($res);
+            break;
+
+        /*
+        * API No. 7-6
+        * API Name : 리뷰 수정 (내 것만 가능)
+        * 마지막 수정 날짜 : 20.05.08
+        */
+/*        case "patchReview":
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            break;*/
+
+
+        /*
+        * API No. 7-7
+        * API Name : 리뷰 목록 (소식 탭)
+        * 마지막 수정 날짜 : 20.05.07
+        */
+        case "getAllReviews":
+
 
     }
 } catch (\Exception $e) {

@@ -32,7 +32,7 @@ from review
                                         from friend
                                         group by friend_id) FOLLOWER ON FOLLOWER.friend_id = id) USER
                    ON USER.userId = user_id
-where restaurant_id = ?";
+where restaurant_id = ? and isDeleted ='N'";
 
     $reviewArray = Array();
 
@@ -65,7 +65,7 @@ function getReviewImages($reviewId)
 from restaurant_image
          RIGHT JOIN (select id reviewId, created_at
                      from review
-                     where restaurant_id = ?) REVIEW ON REVIEW.reviewId = review_id
+                     where restaurant_id = ? and isDeleted ='N') REVIEW ON REVIEW.reviewId = review_id
 where image_url is not null
 order by created_at desc
 limit 5;";
@@ -101,7 +101,7 @@ function getRating($restaurantId){
 function getReviewNum($restaurantId){
 
     $pdo = pdoSqlConnect();
-    $query = "select COUNT(*) num from review where restaurant_id =? group by restaurant_id = ?;";
+    $query = "select COUNT(*) num from review where restaurant_id =? and isDeleted = 'N' group by restaurant_id = ?;";
 
     $st = $pdo->prepare($query);
     $st->execute([$restaurantId, $restaurantId]);
@@ -114,8 +114,6 @@ function getReviewNum($restaurantId){
 //    print_r($res[0]);
     return $res[0]['num'];
 }
-
-
 
 function postReview($userId, $restaurantId, $review, $content, $imageList)
 {
@@ -149,7 +147,7 @@ function postReview($userId, $restaurantId, $review, $content, $imageList)
     try {
         $reviewSt = $pdo->prepare($reviewQuery);
         $imageSt = $pdo->prepare($imageQuery);
-        
+
         // rating 업데이트
         $ratingSt = $pdo->prepare($ratingQuery);
 
@@ -176,4 +174,76 @@ function postReview($userId, $restaurantId, $review, $content, $imageList)
     }
     $st = null;
     $pdo = null;
+}
+
+
+function isExistReview($reviewId){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM review rv WHERE rv.id =?) AS exist;";
+
+
+    $st = $pdo->prepare($query);
+    $st->execute([$reviewId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;
+    $pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+function isMatchedReview($userId, $reviewId){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM review rv WHERE rv.id =? and rv.user_id = ?) AS exist;";
+
+
+    $st = $pdo->prepare($query);
+    $st->execute([$reviewId, $userId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;
+    $pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+function isDeleted($reviewId){
+    $pdo = pdoSqlConnect();
+    $query = "select isDeleted from review where id = ?";
+
+
+    $st = $pdo->prepare($query);
+    $st->execute([$reviewId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;
+    $pdo = null;
+
+    return intval($res[0]["isDeleted"]);
+}
+function deleteReview($reviewId){
+
+    $pdo = pdoSqlConnect();
+    $query = "UPDATE review
+SET isDeleted = 'Y'
+WHERE id = ?;";
+
+    
+    try{
+        $st = $pdo->prepare($query);
+        $st->execute([$reviewId]);
+    }catch (PDOException $e){
+        return 'false';
+    }
+
+
+    $st = null;
+    $pdo = null;
+    
+}
+
+function getAllReviews(){
+
 }

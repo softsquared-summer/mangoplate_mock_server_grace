@@ -79,6 +79,11 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     // 7. 리뷰
     $r->addRoute('GET', '/restaurants/{restaurantId}/reviews', ['ReviewController', 'getReviews']);
     $r->addRoute('POST', '/restaurants/{restaurantId}/review', ['ReviewController', 'postReview']);
+    
+    $r->addRoute('DELETE', '/reviews/{reviewId}', ['ReviewController', 'deleteReview']);
+    $r->addRoute('PATCH', '/reviews/{reviewId}', ['ReviewController', 'patchReview']);
+
+    $r->addRoute('GET', '/reviews', ['ReviewController', 'getAllReviews']);
 
 
 });
