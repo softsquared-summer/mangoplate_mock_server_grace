@@ -5,6 +5,7 @@ require './vendor/autoload.php';
 require './pdos/MangoPdo.php';
 require './pdos/RestaurantPdo.php';
 require './pdos/FriendPdo.php';
+require './pdos/ReviewPdo.php';
 
 
 use \Monolog\Logger as Logger;
@@ -75,6 +76,10 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('GET', '/users/{userId}/following', ['FriendController', 'getfollowing']);
     $r->addRoute('POST', '/friends/{userId}', ['FriendController', 'postFriend']);
 
+    // 7. 리뷰
+    $r->addRoute('GET', '/restaurants/{restaurantId}/reviews', ['ReviewController', 'getReviews']);
+
+
 
 });
 
@@ -139,11 +144,11 @@ switch ($routeInfo[0]) {
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/FriendController.php';
                 break;
-            /*case 'ReviewController':
+            case 'ReviewController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/ReviewController.php';
                 break;
-            case 'ElementController':
+            /*case 'ElementController':
                 $handler = $routeInfo[1][1]; $vars = $routeInfo[2];
                 require './controllers/ElementController.php';
                 break;
