@@ -446,6 +446,14 @@ limit 1;";
     $st = null;
     $pdo = null;
 
-    // print_r($res);
-    return $res[0];
+//    print_r($res);
+    $temp = Array();
+    $temp['menuUpdate'] = "";
+
+    if(empty($res)){
+        return $temp;
+    }else{
+        return $res[0];
+    }
+//    return $res[0];
 }
