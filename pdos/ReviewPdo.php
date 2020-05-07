@@ -13,7 +13,9 @@ function getReviews($restaurantId, $typeQuery)
            WHEN rating = 5 THEN '맛있다!'
            WHEN rating = 3 THEN '괜찮다'
            WHEN rating = 1 THEN '별로' END review,
-       content
+         CASE WHEN
+           length(content) > 100 THEN CONCAT(left(content, 100), '…')
+            WHEN length(content) <= 100 THEN content END content
 
 from review
          LEFT JOIN (select id                                                         userId,
