@@ -15,7 +15,8 @@ function getReviews($restaurantId, $typeQuery)
            WHEN rating = 1 THEN '별로' END review,
          CASE WHEN
            length(content) > 100 THEN CONCAT(left(content, 100), '…')
-            WHEN length(content) <= 100 THEN content END content
+            WHEN length(content) <= 100 THEN content END content,
+                   date_format(created_at, '%Y-%m-%d') createdAt
 
 from review
          LEFT JOIN (select id                                                         userId,
