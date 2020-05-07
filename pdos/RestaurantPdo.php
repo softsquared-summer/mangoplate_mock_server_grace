@@ -421,9 +421,9 @@ where restaurant_id = ?;";
     $st = null;
     $pdo = null;
 
-    if (empty($res)) {
-        return null;
-    }
+//    if (empty($res)) {
+//        return null;
+//    }
 //    print_r($res);
     // print($res);
     return $res;
