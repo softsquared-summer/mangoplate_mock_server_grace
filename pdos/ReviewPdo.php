@@ -81,6 +81,42 @@ limit 5;";
     return $res;
 }
 
+// postReview를 위한 함수
+function getRating($restaurantId){
+
+    $pdo = pdoSqlConnect();
+    $query = "select rating from rating where restaurant_id = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+//    print_r($res[0]);
+    return $res[0]['rating'];
+}
+function getReviewNum($restaurantId){
+
+    $pdo = pdoSqlConnect();
+    $query = "select COUNT(*) num from review where restaurant_id =? group by restaurant_id = ?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$restaurantId, $restaurantId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+//    print_r($res[0]);
+    return $res[0]['num'];
+}
+
+
+
 function postReview($userId, $restaurantId, $review, $content, $imageList)
 {
 
@@ -90,18 +126,46 @@ function postReview($userId, $restaurantId, $review, $content, $imageList)
     $reviewQuery = "INSERT INTO review (user_id, restaurant_id, content, rating, created_at) VALUES (?, ?, ?, ?, NOW());";
     $imageQuery = "INSERT INTO restaurant_image (review_id, image_url) VALUES (?, ?);";
 
+    $insertQuery = "INSERT INTO rating (rating, restaurant_id) VALUES (?, ?);";
+    $updateQuery = "UPDATE rating SET rating = ? WHERE restaurant_id = ?;";
+
+    $rating = getRating($restaurantId);
+    if(empty($rating)){
+        $rating = 0;
+        $ratingQuery = $insertQuery;
+    }else{
+        $ratingQuery = $updateQuery;
+    }
+
+    $num = getReviewNum($restaurantId);
+    if(empty($num)){
+        $num = 0;
+    }
+
+//    echo $rating;
+//    echo $num;
+    $finalRating = round((($rating * $num + $review) / ($num + 1)), 1);
+
     try {
         $reviewSt = $pdo->prepare($reviewQuery);
         $imageSt = $pdo->prepare($imageQuery);
+        
+        // rating 업데이트
+        $ratingSt = $pdo->prepare($ratingQuery);
 
         $pdo->beginTransaction();
 
+        // 1. review insert
         $reviewSt->execute([$userId, $restaurantId, $content, $review]);
         $reviewId = $pdo->lastInsertId();
 
+        // 2. image insert
         foreach ($imageList as $key => $value) {
             $imageSt->execute([$reviewId, $value]);
         }
+
+        // 3. update rating / 새로 계산된 finalRating를 집어 넣기
+        $ratingSt->execute([$finalRating, $restaurantId]);
 
         $pdo->commit();
     } catch (PDOException $e) {
