@@ -144,7 +144,7 @@ try {
                 if (!isValidUser($email, $pw)) {
                     $res->isSuccess = FALSE;
                     $res->code = 400;
-                    $res->message = "유효하지 않은 사용자 입니다";
+                    $res->message = "이메일 주소 또는 비밀번호를 다시 확인하세요";
                     echo json_encode($res, JSON_NUMERIC_CHECK);
                     return;
                 }
