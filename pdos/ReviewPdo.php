@@ -57,7 +57,6 @@ where restaurant_id = ?";
     return $reviewArray;
 }
 
-
 function getReviewImages($reviewId)
 {
     $pdo = pdoSqlConnect();
@@ -82,33 +81,35 @@ limit 5;";
     return $res;
 }
 
-/*foreach ($reviewArray as $key => $value) {
-    $st->execute([$restaurantId]);
-    $st->setFetchMode(PDO::FETCH_ASSOC);
-    $res = $st->fetch();
+function postReview($userId, $restaurantId, $review, $content, $imageList)
+{
 
-    # reviewId 값 받아오기
+    $pdo = pdoSqlConnect();
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    print_r($reviewArray);
-    $reviewId = $reviewArray[$key]['reviewId'];
-    echo $reviewId;*/
+    $reviewQuery = "INSERT INTO review (user_id, restaurant_id, content, rating, created_at) VALUES (?, ?, ?, ?, NOW());";
+    $imageQuery = "INSERT INTO restaurant_image (review_id, image_url) VALUES (?, ?);";
 
+    try {
+        $reviewSt = $pdo->prepare($reviewQuery);
+        $imageSt = $pdo->prepare($imageQuery);
 
-/*        if (isset($res[0]['id'])) {
-            $areaIdArray[$key] = $res[0]['id'];
-        } else {
-            return null;
-        }*/
+        $pdo->beginTransaction();
 
+        $reviewSt->execute([$userId, $restaurantId, $content, $review]);
+        $reviewId = $pdo->lastInsertId();
 
-/*
-    $st = $pdo->prepare($query);
-    $st->execute([$restaurantId]);
-    $st->setFetchMode(PDO::FETCH_ASSOC);
-    $res = $st->fetchAll();*/
+        foreach ($imageList as $key => $value) {
+            $imageSt->execute([$reviewId, $value]);
+        }
 
-/*$st = null;
-$pdo = null;
-//
-//    return $res;
-}*/
+        $pdo->commit();
+    } catch (PDOException $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollback();
+        }
+        return $e->getMessage();
+    }
+    $st = null;
+    $pdo = null;
+}
