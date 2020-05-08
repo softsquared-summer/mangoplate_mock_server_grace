@@ -39,6 +39,8 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->addRoute('POST', '/user', ['MangoController', 'postUser']);
     $r->addRoute('POST', '/jwt', ['MangoController', 'createJwt']);
 
+    $r->addRoute('GET', '/users/{userId}', ['MangoController', 'getMyInfo']);
+
     $r->addRoute('GET', '/user', ['MangoController', 'getMe']);
     $r->addRoute('PATCH', '/user', ['MangoController', 'patchUser']);
 
@@ -79,7 +81,9 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     // 7. 리뷰
     $r->addRoute('GET', '/restaurants/{restaurantId}/reviews', ['ReviewController', 'getReviews']);
     $r->addRoute('POST', '/restaurants/{restaurantId}/review', ['ReviewController', 'postReview']);
-    
+
+    $r->addRoute('GET', '/users/{userId}/reviews', ['ReviewController', 'getUserReviews']);
+
     $r->addRoute('DELETE', '/reviews/{reviewId}', ['ReviewController', 'deleteReview']);
     $r->addRoute('PATCH', '/reviews/{reviewId}', ['ReviewController', 'patchReview']);
 

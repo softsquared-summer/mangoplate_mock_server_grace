@@ -47,6 +47,98 @@ function postUser($email, $pw1, $name, $profileUrl, $phone)
     
 }
 
+function isExistId($userId){
+    $pdo = pdoSqlConnect();
+    $query = "SELECT EXISTS(SELECT * FROM user u WHERE u.id= ?) AS exist;";
+
+
+    $st = $pdo->prepare($query);
+    //    $st->execute([$param,$param]);
+    $st->execute([$userId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st=null;
+    $pdo = null;
+
+    return intval($res[0]["exist"]);
+}
+
+function getMyInfo($userId){
+    $pdo = pdoSqlConnect();
+    $userQuery = "select IF(profile_url is null, '', profile_url) profileUrl, name from user where id = ?;";
+
+    $followerQuery="select IF(COUNT(id) is null, 0, COUNT(id))          followerNum
+from user
+         LEFT JOIN (select user_id, COUNT(*) reviewNum
+                    from review
+                    group by user_id) REVIEW ON REVIEW.user_id = id
+         LEFT JOIN (select friend_id, COUNT(user_id) followerNum
+                    from friend
+                    group by friend_id) FOLLOWER_NUM ON FOLLOWER_NUM.friend_id = id
+         JOIN (select user_id
+               from friend
+               where friend_id = ?) FOLLOWING ON FOLLOWING.user_id = id;";
+
+    $followingQuery="select IF(COUNT(id) is null, 0, COUNT(id)) followingNum
+from user
+         LEFT JOIN (select user_id, COUNT(*) reviewNum
+                    from review
+                    group by user_id) REVIEW ON REVIEW.user_id = id
+         LEFT JOIN (select friend_id, COUNT(user_id) followerNum
+                    from friend
+                    group by friend_id) FOLLOWER_NUM ON FOLLOWER_NUM.friend_id = id
+         JOIN (select friend_id
+               from friend
+               where user_id = ?) FOLLOWER ON FOLLOWER.friend_id = id;";
+
+    $reviewQuery="select IF(COUNT(id) is null, 0, COUNT(id)) reviewNum from review where user_id=?;";
+
+    $photoQuery="select IF(COUNT(*) is null, 0, COUNT(*)) photoNum
+from restaurant_image
+where review_id in (select id reviewNum from review where user_id = ?);";
+
+    $futureQuery = "select IF(COUNT(*) is null, 0, COUNT(*)) futureNum
+from future
+where user_id = ?;";
+
+    $res = Array();
+
+    $st = $pdo->prepare($userQuery);
+    $st->execute([$userId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $userRes = $st->fetch();
+
+    $st = $pdo->prepare($followerQuery);
+    $st->execute([$userId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $followerRes = $st->fetch();
+
+    $st = $pdo->prepare($followingQuery);
+    $st->execute([$userId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $followingRes = $st->fetch();
+
+    $st = $pdo->prepare($reviewQuery);
+    $st->execute([$userId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $reviewRes = $st->fetch();
+
+    $st = $pdo->prepare($photoQuery);
+    $st->execute([$userId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $photoRes = $st->fetch();
+
+    $st = $pdo->prepare($futureQuery);
+    $st->execute([$userId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $futureRes = $st->fetch();
+
+    $real = array_merge($userRes, $followerRes, $followingRes, $reviewRes, $photoRes, $futureRes);
+//    print_r($res);
+    return $real;
+}
+
 function getMe($userId){
     $pdo = pdoSqlConnect();
     $query = "select profile_url profileUrl,

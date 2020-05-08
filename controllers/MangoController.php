@@ -302,6 +302,52 @@ try {
             break;
 
         /*
+        * API No. 1-4
+        * API Name : 특정 user 내정보 탭
+        * 마지막 수정 날짜 : 20.05.08
+        */
+
+        case "getMyInfo":
+            http_response_code(200);
+
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
+            $userEmail = $data->email;
+            $tokenId = getUserId($userEmail);
+
+            $userId = $vars['userId'];
+
+
+            if(!isExistId($userId)){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "존재하지 않는 User입니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            $result = getMyInfo($userId);
+//            settype($result['userId'], "integer");
+
+            $res->result =$result;
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "내 정보 탭";
+            echo json_encode($res);
+            break;
+
+
+
+        /*
         * API No. 1-5
         * API Name : 내 정보 조회
         * 마지막 수정 날짜 : 20.05.05
