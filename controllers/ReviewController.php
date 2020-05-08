@@ -394,7 +394,131 @@ try {
         * 마지막 수정 날짜 : 20.05.08
         */
         case "getAllReviews":
+            http_response_code(200);
 
+            $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
+
+            if (!isValidHeader($jwt, JWT_SECRET_KEY)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "유효하지 않은 토큰입니다";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                addErrorLogs($errorLogs, $res, $req);
+                return;
+            }
+
+            // (1) QueryString: area
+            $area = $_GET['area'];
+
+
+            if (!isset($area)) {
+
+                $area ='';
+            } else {
+
+                // echo $area;
+                $realArea = "(";
+
+                $temp = str_replace(" ", "", $area);
+                $areaArray = explode(',', $temp);
+
+                $areaIdArray = getAreaId($areaArray);
+                // print_r($areaIdArray);
+                if ($areaIdArray == null) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "Query Params를 확인하세요. (area = 올바르지 않은 (지역명)이 있습니다.)";
+                    echo json_encode($res, JSON_NUMERIC_CHECK);
+                    break;
+                }
+
+                foreach ($areaArray as $key => $value) {
+                    $realArea = $realArea . '\'' . $areaArray[$key] . '\'';
+                    if ($value === end($areaArray)) {
+                        $realArea = $realArea . ')';
+                    } else {
+                        $realArea = $realArea . ',';
+                    }
+                }
+
+                $area = ' and areaName in ' . $realArea;
+            }
+
+            // (2) QueryString: type
+            $type = $_GET['type'];
+
+            if($type != 'all' and $type != 'following'){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "Query Params(type에 all, following 중 하나를 입력하세요.)";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+
+            // (3) QueryString: review
+            $review = $_GET['review'];
+            $reviewCheckArray = array(1, 3, 5);
+
+            if(!in_array($review, $reviewCheckArray)){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "Query Params(review에는 5(맛있다), 3(괜찮다), 1(별로) 중 하나 이상을 입력하세요.)";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            $realReview = "(";
+
+            $reviewTemp = str_replace(" ", "", $review);
+            $reviewArray = explode(',', $reviewTemp);
+
+            foreach ($reviewArray as $key => $value) {
+                $realReview = $realReview . '\'' . $reviewArray[$key] . '\'';
+                if ($value === end($reviewArray)) {
+                    $realReview = $realReview . ')';
+                } else {
+                    $realReview = $realReview . ',';
+                }
+            }
+
+            $review = ' and rating in ' . $realReview;
+
+
+            // 해당 reviewId 작성자가 token의 유저가 맞는지 확인
+            $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
+            $userEmail = $data->email;
+            $userId = getUserId($userEmail);
+
+
+            $reviewResult = getAllReviews($userId, $type, $area, $review);
+
+            if (empty($reviewResult)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "Review가 없습니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+
+            foreach ($reviewResult as $key => $value) {
+                settype($reviewResult[$key]['reviewId'], "integer");
+                settype($reviewResult[$key]['userId'], "integer");
+                settype($reviewResult[$key]['restaurantId'], "integer");
+
+                foreach ($reviewResult[$key]['images'] as $imgKey => $imgValue) {
+                    settype($reviewResult[$key]['images'][$imgKey]['imageId'], "integer");
+                }
+            }
+
+
+            $res->result = $reviewResult;
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "리뷰 조회";
+            echo json_encode($res);
+            break;
 
     }
 } catch (\Exception $e) {

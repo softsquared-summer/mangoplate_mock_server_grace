@@ -278,11 +278,11 @@ WHERE id = ?;";
 
         $pdo->beginTransaction();
 
-        // 1. review insert
+        // 1. review update
         $reviewSt->execute([$content, $review, $reviewId]);
         $reviewId = $pdo->lastInsertId();
 
-        // 2. image insert
+        // 2. image insert (지금은 그냥 다 insert 하도록 하고 있음)
         foreach ($imageList as $key => $value) {
             $imageSt->execute([$reviewId, $value]);
         }
@@ -302,6 +302,105 @@ WHERE id = ?;";
     $pdo = null;
 
 }
-function getAllReviews(){
+
+function getAllReviews($tokenId, $type, $area, $review){
+
+    $pdo = pdoSqlConnect();
+    $query = "select id                                               reviewId,
+       USER.userId,
+       name,
+       profileUrl,
+       reviewNum,
+       followerNum,
+       CASE
+           WHEN rating = 5 THEN '맛있다!'
+           WHEN rating = 3 THEN '괜찮다'
+           WHEN rating = 1 THEN '별로' END                review,
+       TITLE.rId                                        restaurantId,
+       TITLE.rName                                      restaurantName,
+       TITLE.areaName                                   restaurantArea,
+       CASE
+           WHEN
+               length(content) > 100 THEN CONCAT(left(content, 100), '…')
+           WHEN length(content) <= 100 THEN content END content,
+       date_format(created_at, '%Y-%m-%d')              createdAt,
+       IF(USERSTAR.star is null, 'NO', USERSTAR.star)   userStar
+from review
+         LEFT JOIN (select id                                                        userId,
+                           name,
+                           IF(profile_url is null, '', profile_url)                  profileUrl,
+                           IF(REVIEW.reviewNum is null, 0, REVIEW.reviewNum)         reviewNum,
+                           IF(FOLLOWER.followerNum is null, 0, FOLLOWER.followerNum) followerNum
+                    from user
+                             LEFT JOIN (select user_id, COUNT(*) reviewNum
+                                        from review
+                                        group by user_id) REVIEW ON REVIEW.user_id = id
+                             LEFT JOIN (select friend_id, COUNT(user_id) followerNum
+                                        from friend
+                                        group by friend_id) FOLLOWER ON FOLLOWER.friend_id = id) USER
+                   ON USER.userId = review.user_id
+         LEFT JOIN (select restaurant_id,
+                           IF(state = 'Y', 'YES', 'NO') star
+                    from future
+                    where user_id = ?) USERSTAR ON USERSTAR.restaurant_id = review.restaurant_id
+         LEFT JOIN (select id rId, name rName, AREA.areaName
+                    from restaurant r
+                             LEFT JOIN (select id areaId, name areaName from area) AREA ON AREA.areaId = area_id) TITLE
+                   ON TITLE.rId = review.restaurant_id";
+
+    $reviewArray = Array();
+
+
+    if ($type == 'all') {
+        $typeQuery = " where isDeleted = 'N'";
+
+        $query = $query . $typeQuery . $area . $review;
+        $st = $pdo->prepare($query);
+
+//        echo $query;
+
+        $st->execute([$tokenId]);
+        $st->setFetchMode(PDO::FETCH_ASSOC);
+
+
+    } elseif ($type == 'following') {
+        $typeQuery = " JOIN (select usr.id tokenId
+                    from user usr
+                             LEFT JOIN (select user_id, COUNT(*) reviewNum
+                                        from review
+                                        group by user_id) REVIEW ON REVIEW.user_id = usr.id
+                             LEFT JOIN (select friend_id, COUNT(user_id) followerNum
+                                        from friend
+                                        group by friend_id) FOLLOWER_NUM ON FOLLOWER_NUM.friend_id =  usr.id
+                             JOIN (select friend_id
+                                   from friend
+                                   where user_id = ?) FOLLOWER ON FOLLOWER.friend_id = usr.id) FOLLOWING
+                   ON FOLLOWING.tokenId = review.user_id
+where isDeleted = 'N'";
+
+        $query = $query . $typeQuery . $area . $review;
+        $st = $pdo->prepare($query);
+
+        $st->execute([$tokenId, $tokenId]);
+        $st->setFetchMode(PDO::FETCH_ASSOC);
+
+    }else{
+        return null;
+    }
+    
+
+    while ($row = $st->fetch()) {
+        $reviewId = $row['reviewId'];
+
+        $row['images'] = getReviewImages($reviewId);
+
+        array_push($reviewArray, $row);
+    }
+
+
+    $st = null;
+    $pdo = null;
+
+    return $reviewArray;
 
 }
