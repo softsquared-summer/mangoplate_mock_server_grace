@@ -218,7 +218,7 @@ try {
             if(!isExistReview($reviewId)){
                 $res->isSuccess = FALSE;
                 $res->code = 400;
-                $res->message = "해당 리뷰가 없습니다.";
+                $res->message = "해당 리뷰가 없습니다. (혹은 이미 삭제된 리뷰입니다.)";
                 echo json_encode($res, JSON_NUMERIC_CHECK);
                 return;
             }
@@ -231,13 +231,13 @@ try {
                 return;
             }
 
-            if(isDeleted($reviewId) == 'Y'){
-                $res->isSuccess = FALSE;
-                $res->code = 400;
-                $res->message = "이미 삭제된 리뷰입니다.";
-                echo json_encode($res, JSON_NUMERIC_CHECK);
-                return;
-            }
+//            if(isDeleted($reviewId) == 'Y'){
+//                $res->isSuccess = FALSE;
+//                $res->code = 400;
+//                $res->message = "이미 삭제된 리뷰입니다.";
+//                echo json_encode($res, JSON_NUMERIC_CHECK);
+//                return;
+//            }
 
             $result = deleteReview($reviewId);
             if($result == 'false'){
@@ -259,7 +259,7 @@ try {
         * API Name : 리뷰 수정 (내 것만 가능)
         * 마지막 수정 날짜 : 20.05.08
         */
-/*        case "patchReview":
+        case "patchReview":
             http_response_code(200);
 
             $jwt = $_SERVER["HTTP_X_ACCESS_TOKEN"];
@@ -273,13 +273,125 @@ try {
                 return;
             }
 
-            break;*/
+            $reviewId = $vars['reviewId'];
+
+            // 해당 reviewId 작성자가 token의 유저가 맞는지 확인
+            $data = getDataByJWToken($jwt, JWT_SECRET_KEY);
+            $userEmail = $data->email;
+            $userId = getUserId($userEmail);
+
+            // Body
+            $review = $req->review;
+            $content = $req->content;
+            $imageList = $req->imageList;
+
+
+            // Default Validation
+            if(!isExistReview($reviewId)){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "해당 리뷰가 없습니다. (혹은 삭제된 리뷰 입니다.)";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            if(!isMatchedReview($userId, $reviewId)){
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "자신의 리뷰만 수정할 수 있습니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+
+            // Body Validation
+            if (empty($review)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "Body - review를 입력하세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+            $reviewArray = array(1, 3, 5);
+            if (!in_array($review, $reviewArray)) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "Body - review는 5(맛있다), 3(괜찮다), 1(별로)만 가능합니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+
+            if (strlen($content) == 0 or strlen($content) > 10000) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "Body - content는 1자 이상 10,000자 이내로 입력하세요.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            // imageList Validation Check - 기존 사진 개수 고려   X 기존 것 까지 같이 보내도록.
+            // $oldNum = getImageNum($reviewId);
+            // if (($oldNum + count($imageList)) > 30) {
+            if (count($imageList) > 30) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "imageList는 최대 30개 까지 넣을 수 있습니다.";
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+            foreach ($imageList as $key => $value) {
+                if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $imageList[$key])) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "올바르지 않은 imageUrl 형식이 있습니다.";
+                    echo json_encode($res);
+                    return;
+                }
+                if (!preg_match("/\.(gif|jpg|png)$/i", $imageList[$key])) {
+                    $res->isSuccess = FALSE;
+                    $res->code = 400;
+                    $res->message = "gif, jpg, png가 아닌 image가 있습니다.";
+                    echo json_encode($res);
+                    return;
+                }
+            }
+
+            $arr_count = count($imageList);
+            $uniq_count = count(array_unique($imageList));
+            if ($arr_count != $uniq_count) {
+                $res->isSuccess = FALSE;
+                $res->code = 400;
+                $res->message = "같은 이미지를 여러 번 넣을 수 없습니다.";
+                echo json_encode($res);
+                return;
+            }
+
+            //
+            $result = patchReview($reviewId, $review, $content, $imageList);
+
+            // PATCH 제대로 됐는지 처리
+            if (isset($result)) {
+                $res->isSuccess = FALSE;
+                $res->code = 500;
+                $res->message = "update 하지 못했습니다. " . $result;
+                echo json_encode($res, JSON_NUMERIC_CHECK);
+                return;
+            }
+
+
+            $res->isSuccess = TRUE;
+            $res->code = 200;
+            $res->message = "리뷰 수정 성공";
+            echo json_encode($res);
+            break;
 
 
         /*
         * API No. 7-7
         * API Name : 리뷰 목록 (소식 탭)
-        * 마지막 수정 날짜 : 20.05.07
+        * 마지막 수정 날짜 : 20.05.08
         */
         case "getAllReviews":
 

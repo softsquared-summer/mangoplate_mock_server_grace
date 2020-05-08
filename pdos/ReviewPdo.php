@@ -179,7 +179,7 @@ function postReview($userId, $restaurantId, $review, $content, $imageList)
 
 function isExistReview($reviewId){
     $pdo = pdoSqlConnect();
-    $query = "SELECT EXISTS(SELECT * FROM review rv WHERE rv.id =?) AS exist;";
+    $query = "SELECT EXISTS(SELECT * FROM review rv WHERE rv.id =? and isDeleted = 'N') AS exist;";
 
 
     $st = $pdo->prepare($query);
@@ -244,6 +244,64 @@ WHERE id = ?;";
     
 }
 
+function getImageNum($reviewId){
+
+    $pdo = pdoSqlConnect();
+    $query = "select COUNT(*) num from restaurant_image where review_id =?;";
+
+    $st = $pdo->prepare($query);
+    $st->execute([$reviewId]);
+    $st->setFetchMode(PDO::FETCH_ASSOC);
+    $res = $st->fetchAll();
+
+    $st = null;
+    $pdo = null;
+
+    return $res[0]['num'];
+
+}
+function patchReview($reviewId, $review, $content, $imageList){
+
+    $pdo = pdoSqlConnect();
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    $reviewUpdateQuery = "UPDATE review
+SET content = ?, rating = ?
+WHERE id = ?;";
+    $imageUpdateQuery = "INSERT INTO restaurant_image (review_id, image_url) VALUES (?, ?);";
+
+
+    try{
+
+        $reviewSt = $pdo->prepare($reviewUpdateQuery);
+        $imageSt = $pdo->prepare($imageUpdateQuery);
+
+        $pdo->beginTransaction();
+
+        // 1. review insert
+        $reviewSt->execute([$content, $review, $reviewId]);
+        $reviewId = $pdo->lastInsertId();
+
+        // 2. image insert
+        foreach ($imageList as $key => $value) {
+            $imageSt->execute([$reviewId, $value]);
+        }
+
+        $pdo->commit();
+        
+
+    }catch (PDOException $e){
+        if ($pdo->inTransaction()) {
+            $pdo->rollback();
+        }
+        return $e->getMessage();
+    }
+
+
+    $st = null;
+    $pdo = null;
+
+}
 function getAllReviews(){
 
 }
