@@ -348,13 +348,16 @@ from review
                              LEFT JOIN (select id areaId, name areaName from area) AREA ON AREA.areaId = area_id) TITLE
                    ON TITLE.rId = review.restaurant_id";
 
+
+    $order= ' order by created_at desc';
+
     $reviewArray = Array();
 
 
     if ($type == 'all') {
         $typeQuery = " where isDeleted = 'N'";
 
-        $query = $query . $typeQuery . $area . $review;
+        $query = $query . $typeQuery . $area . $review . $order;
         $st = $pdo->prepare($query);
 
 //        echo $query;
@@ -378,7 +381,7 @@ from review
                    ON FOLLOWING.tokenId = review.user_id
 where isDeleted = 'N'";
 
-        $query = $query . $typeQuery . $area . $review;
+        $query = $query . $typeQuery . $area . $review . $order;
         $st = $pdo->prepare($query);
 
         $st->execute([$tokenId, $tokenId]);
